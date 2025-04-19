@@ -1,0 +1,48 @@
+taskNumUni	condNumUni	conditionName	duration	Action	MotorControl	MotorPlanning	RespAlt	RespSelection	InterferenceResolution	WorkingMemory	Updating	ActiveMaintenance	CognitiveLoad	languageProcess	VisualWM	DividedAtt	VisualAttention	LongtermMemory	AutobioRecall	SemanticKnowledge	LexicalProcessing	WordComprehension	LanguageProcessing	VerbalFluency	Narrative	Reasoning	Categorisation	CreativeThink	MentalArithmatic	FeedbackProcess	TaskSwitch	Emotion	EmotionRecognition	Arousal	SocialCog	Imagination	VisualPerception	VisualBodyRecog	VisualLetterRecog	VisualNumRecog	VisualObjectRecog	ActObs	SceneRecog	leftHandPresses	rightHandPresses	saccades
+ 1	 1	NoGo             	15	1	0	0	2	0	1	0	0	0	0	0	0	0	0	1	0	1	1	1	0	0	0	0	0	0	0	0	1	0	0	0	0	0	1	0	0	0	0	0	0	 0	  0	28
+ 1	 2	Go               	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	1	0	1	1	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	15	  0	28
+ 2	 3	ToM              	30	1	1	0	2	1	0	1	0	1	1	1	0	0	0	1	0	1	1	1	1	0	1	0	0	1	0	1	0	0	0	0	1	0	1	0	0	0	0	0	0	 2	  0	98
+ 3	 4	VideoAct     	    15	1	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	1	1	0	 0	  0	31
+ 3	 5	VideoKnots       	15	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	1	0	0	 0	  0	31
+ 4	 6	UnpleasantScenes 	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	1	1	1	0	1	0	0	1	0	0	0	1	0	0	 8	  0	37
+ 4	 7	PleasantScenes   	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 7	  0	37
+ 5	 8	Math             	15	1	1	0	2	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	1	0	0	0	0	0	1	0	0	1	0	0	0	 0	  5	29
+ 5	 9	DigitJudgement   	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	 0	  5	29
+ 6	10	CheckerBoard     	30	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	 0	  0	46
+ 7	11	SadFaces         	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	1	1	1	1	1	0	0	1	1	0	0	0	0	0	 0	  8	38
+ 7	12	HappyFaces       	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	1	1	1	1	0	0	0	1	1	0	0	0	0	0	 0	  7	38
+ 8	13	IntervalTiming   	30	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	 0	 15	36
+ 9	14	MotorImagery     	30	1	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	 0	  0	41
+10	15	FingerSimple     	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	12	 12	38
+10	16	FingerSeq        	15	1	1	1	2	1	0	1	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	12	 12	38
+11	17	Verbal0Back      	15	1	0	0	1	1	0	1	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	1	0	0	0	0	 0	  0	20
+11	18	Verbal2Back      	15	1	1	0	1	1	0	1	1	2	2	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	1	0	0	0	0	 7	  0	20
+12	19	Object0Back      	15	1	0	0	1	1	0	1	0	1	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  0	25
+12	20	Object2Back      	15	1	1	0	1	1	0	1	1	2	2	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  7	25
+13	21	SpatialNavigation	30	1	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	 0	  0	50
+14	22	StroopIncon      	15	1	1	0	4	1	2	0	0	0	0	0	0	0	1	1	0	1	1	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 0	  4	22
+14	23	StroopCon        	15	1	1	0	4	1	0	0	0	0	0	0	0	0	1	1	0	1	1	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 0	3.5	22
+15	24	VerbGen          	15	0	0	0	0	0	0	0	0	0	0	1	0	0	0	1	0	2	2	1	0	1	0	0	0	0	0	0	1	0	0	0	0	0	1	0	0	0	0	0	0	 0	  0	26
+15	25	WordRead         	15	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	1	1	1	0	0	0	0	0	0	0	0	1	0	0	0	0	0	1	0	0	0	0	0	0	 0	  0	26
+16	26	VisualSearchSmall 	10	1	1	0	2	1	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	1	0	0	0	0	 5	  0	32
+16	27	VisualSearchMed  	10	1	1	0	2	1	0	0	0	0	0	0	0	0	2	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	1	0	0	0	0	 5	  0	32
+16	28	VisualSearchLarge 	10	1	1	0	2	1	0	0	0	0	0	0	0	0	3	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	1	0	0	0	0	 5	  0	32
+17	29	rest             	30	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	 0	  0	45
+18	30	CPRO             	30	1	1	0	4	1	1	1	0	2	2	0	0	0	0	1	0	1	1	1	1	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 2	  2	95
+19	31	Prediction       	10	1	1	0	2	1	0	1	0	1	0	0	0	0	0	1	0	1	1	1	1	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 2	  0	22
+19	32	PredictViol      	10	1	1	0	2	1	0	1	0	1	0	0	0	0	0	1	0	1	1	1	1	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 2	  0	22
+19	33	PredictScram     	10	1	1	0	2	1	0	1	0	1	0	0	0	0	0	1	0	1	1	1	1	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 2	  0	22
+20	34	SpatialMapEasy   	10	1	1	0	1	1	1	1	0	1	1	0	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	 1	  1	16
+20	35	SpatialMapMed    	10	1	1	0	4	1	1	1	0	2	2	0	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	 1	  1	16
+20	36	SpatialMapDiff   	10	1	1	0	7	1	1	1	0	3	3	0	1	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	1	0	0	0	 1	  1	16
+21	37	NatureMovie      	30	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	1	0	0	0	0	0	0	1	0	1	0	0	1	0	0	0	1	0	1	 0	  0	71
+22	38	RomanceMovie     	30	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	2	0	0	0	0	0	0	1	1	1	1	0	1	1	0	0	1	0	0	 0	  0	45
+23	39	LandscapeMovie   	30	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	0	0	0	1	0	1	 0	  0	58
+24	40	MentalRotEasy    	10	1	1	0	2	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  3	43
+24	41	MentalRotMed     	10	1	1	0	2	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  3	43
+24	42	MentalRotDiff    	10	1	1	0	2	1	0	0	0	0	0	0	0	1	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  3	43
+25	43	BodyMotionIntact 	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	1	1	1	0	0	0	1	1	0	0	1	0	0	 0	  5	23
+25	44	BodyMotionScram  	15	1	1	0	2	1	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	1	0	0	0	0	0	1	0	0	0	1	0	0	 0	  5	23
+26	45	RespAltEasy      	10	1	1	0	1	1	0	0	0	0	0	0	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 1	  1	23
+26	46	RespAltMed       	10	1	1	0	2	1	1	0	0	0	0	0	0	1	2	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 1	  1	23
+26	47	RespAltDiff      	10	1	1	0	4	1	1	0	0	0	0	0	0	1	3	0	0	0	0	0	0	0	0	0	0	0	0	1	1	0	0	0	0	0	1	0	0	0	0	0	0	 1	  1	23

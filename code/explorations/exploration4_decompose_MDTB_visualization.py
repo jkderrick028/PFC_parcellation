@@ -1,0 +1,123 @@
+import os.path, pickle, subprocess
+import numpy as np
+import Functional_Fusion.atlas_map as am
+import Functional_Fusion.dataset as ds
+from sklearn.manifold import MDS
+import nibabel as nib
+import matplotlib.pyplot as plt
+from scipy.spatial.distance import pdist, squareform
+from py_util_dx.py_utils import setProjectPath, sqmat2vec
+from decompose_pattern_into_group_indv_noise import decompose_pattern_into_group_indv_noise
+import SUITPy.flatmap as flatmap
+from nitools.cifti import surf_from_cifti
+
+
+projectPath, mainResultsPath = setProjectPath()
+surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
+
+resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''))
+if not os.path.exists(resultsPath):
+    os.makedirs(resultsPath)
+
+resultsPath_pattern_decomposition = os.path.join(mainResultsPath, 'exploration4_decompose_MDTB')
+PKL_output = os.path.join(resultsPath_pattern_decomposition, 'output_B4.pkl')
+
+with open(PKL_output, 'rb') as pf:
+    output = pickle.load(pf)
+
+output_PFC = output['PFC']
+output_cortex = output['whole_cortex']
+
+# Get the atlas
+atlas_str = 'fs32k'
+atlas, ainf = am.get_atlas(atlas_str)
+
+# Read data from two gifti files for left and right hemisphere
+glasser_left = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
+glasser_right = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
+
+flat_surf_L = os.path.join(surface_helpers_dir, 'tpl-fs32k_hemi-L_flat.surf.gii')
+flat_surf_R = os.path.join(surface_helpers_dir, 'tpl-fs32k_hemi-R_flat.surf.gii')
+
+# flatmap visualization
+underlay_L = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii')
+underlay_R = os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii')
+border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
+
+# normalization_method = 'gse'    # gse or gs
+normalization_method = 'gs'
+
+if normalization_method == 'gse':
+    voxel_wise_PFC = np.divide(output_PFC['voxel_wise'], np.tile(np.sum(output_PFC['voxel_wise'], axis=1).reshape(-1, 1), (1, 3)))
+    voxel_wise_cortex = np.divide(output_cortex['voxel_wise'], np.tile(np.sum(output_cortex['voxel_wise'], axis=1).reshape(-1, 1), (1, 3)))
+else:
+    voxel_wise_PFC = np.divide(output_PFC['voxel_wise'][:, 0:2], np.tile(np.sum(output_PFC['voxel_wise'][:, 0:2], axis=1).reshape(-1, 1), (1, 2)))
+    voxel_wise_cortex = np.divide(output_cortex['voxel_wise'][:, 0:2], np.tile(np.sum(output_cortex['voxel_wise'][:, 0:2], axis=1).reshape(-1, 1), (1, 2)))
+
+# v_g
+[v_g_extended_L, v_g_extended_R] = surf_from_cifti(atlas.data_to_cifti(voxel_wise_cortex[:, 0].reshape(1, -1)))
+
+figI_flatmap = 11
+nHors = 1
+nVers = 2
+fig, axs = plt.subplots(nHors, nVers, figsize=(15, 12), num=figI_flatmap)
+plt.axes(axs[0])
+flatmap.plot(v_g_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False)
+axs[0].set_title('cortex L')
+plt.axes(axs[1])
+flatmap.plot(v_g_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False, colorbar=True)
+axs[1].set_title('cortex R')
+
+# plt.tight_layout()
+plt.suptitle('v_g')
+
+PS_variance = os.path.join(resultsPath, f'flatmap_v_g_{normalization_method}.png')
+if os.path.exists(PS_variance):
+    os.remove(PS_variance)
+fig.savefig(PS_variance, format='png', dpi=500)
+# fig.savefig(PS_variance, format='svg', dpi=400)
+
+# v_s
+[v_s_extended_L, v_s_extended_R] = surf_from_cifti(atlas.data_to_cifti(voxel_wise_cortex[:, 1].reshape(1, -1)))
+plt.clf()
+
+fig, axs = plt.subplots(nHors, nVers, figsize=(15, 12), num=figI_flatmap)
+plt.axes(axs[0])
+flatmap.plot(v_s_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False)
+axs[0].set_title('cortex L')
+plt.axes(axs[1])
+flatmap.plot(v_s_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False, colorbar=True)
+axs[1].set_title('cortex R')
+
+# plt.tight_layout()
+plt.suptitle('v_s')
+
+PS_variance = os.path.join(resultsPath, f'flatmap_v_s_{normalization_method}.png')
+if os.path.exists(PS_variance):
+    os.remove(PS_variance)
+fig.savefig(PS_variance, format='png', dpi=500)
+# fig.savefig(PS_variance, format='svg', dpi=400)
+
+# v_e
+if normalization_method == 'gse':
+    [v_e_extended_L, v_e_extended_R] = surf_from_cifti(atlas.data_to_cifti(voxel_wise_cortex[:, 2].reshape(1, -1)))
+    plt.clf()
+
+    fig, axs = plt.subplots(nHors, nVers, figsize=(15, 12), num=figI_flatmap)
+    plt.axes(axs[0])
+    flatmap.plot(v_e_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False)
+    axs[0].set_title('cortex L')
+    plt.axes(axs[1])
+    flatmap.plot(v_e_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[-0.1, 0.7], borders=border_LR, frame=None, new_figure=False, colorbar=True)
+    axs[1].set_title('cortex R')
+
+    # plt.tight_layout()
+    plt.suptitle('v_e')
+
+    PS_variance = os.path.join(resultsPath, f'flatmap_v_e_{normalization_method}.png')
+    if os.path.exists(PS_variance):
+        os.remove(PS_variance)
+    fig.savefig(PS_variance, format='png', dpi=500)
+    # fig.savefig(PS_variance, format='svg', dpi=500)
+plt.show()
+

@@ -1,0 +1,16 @@
+*
+
+!.gitignore
+![0-9a-zA-Z]*.m
+![0-9a-zA-Z]*.txt
+![0-9a-zA-Z]*.py
+![0-9a-zA-Z]*.sl
+![0-9a-zA-Z]*.md
+![0-9a-zA-Z]*.ipynb
+![0-9a-zA-Z]*.json
+!/surface_helpers/
+!/surface_helpers/*
+
+!*/
+
+
