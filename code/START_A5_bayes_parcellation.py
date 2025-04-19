@@ -90,7 +90,8 @@ def plot_probseg(nifti,cmap):
 
 
 # Load colormap and labels
-lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
+# lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
+lid,cmap,names = nt.read_lut('atl-glasser.lut')
 
 # Make a nifti image of the first subject
 nifti = atlas.data_to_nifti(U)
