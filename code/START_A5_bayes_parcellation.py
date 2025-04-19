@@ -108,4 +108,4 @@ for i,s in enumerate([6,9,12]):
     nifti = atlas.data_to_nifti(U_indiv[s].numpy())
     plot_probseg(nifti,cmap)
 
-pass 
+pass
