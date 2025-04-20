@@ -15,6 +15,7 @@ from py_util_dx.py_utils import setProjectPath
 import os, pickle
 import IndividualParcellation
 from nitools.cifti import surf_from_cifti
+import SUITPy.flatmap as flatmap
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -27,53 +28,71 @@ if not os.path.exists(resultsPath):
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
+PKL_output = os.path.join(resultsPath, 'output.pkl')
+output = {}
+
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
-# Sample the probabilistic atlas at the specific atlas grayordinates
-# atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
-atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
-U = atlas.read_data(atlas_fname)
-U = U.T
+# # Sample the probabilistic atlas at the specific atlas grayordinates
+# # atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
+# atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
+# U = atlas.read_data(atlas_fname)
+# U = U.T
+#
+# # converting the hard parcellation into a probabilistic one
+# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+#
+# # Build the arrangement model - the parameters are the log-probabilities of the atlas
+# # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
+# ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
+#
+# # loading MDTB data
+# PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+# with open(PKL_data, 'rb') as pf:
+#     original_data = pickle.load(pf)
+#     data = original_data['X_individuals']
+#     info_individuals = original_data['info_individuals']
+#     dataset_obj_individuals = original_data['dataset_obj_individuals']
+#
+# cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
+# part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+#
+# # fit the emission model to the data
+# # K is the number of parcels
+# K = ar_model.K
+# # Make a design matrix
+# X= ut.indicator(cond_vec)
+# # Build an emission model
+# em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
+# # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
+# M = fm.FullMultiModel(ar_model, [em_model])
+# # Attach the data to the model - this is done for speed
+# # The data is passed as a list with on element per data set
+# M.initialize([data])
+#
+# # Now we can run the EM algorithm
+# M, _, _, _ = M.fit_em(iter=200, tol=0.01,
+#     fit_arrangement=False,fit_emission=True,first_evidence=False)
+#
+# M.initialize([data])
+# U_indiv, _ = M.Estep()
+#
+#
+# # saving U and U_indiv
+# output['U'] = U
+# output['U_indiv'] = U_indiv
+#
+# with open(PKL_output, 'wb') as pf:
+#     pickle.dump(output, pf)
 
-# converting the hard parcellation into a probabilistic one
-U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+# loading saved U and U_indiv
+with open(PKL_output, 'rb') as pf:
+    output = pickle.load(pf)
 
-# Build the arrangement model - the parameters are the log-probabilities of the atlas
-# ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
-
-# loading MDTB data
-PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
-with open(PKL_data, 'rb') as pf:
-    original_data = pickle.load(pf)
-    data = original_data['X_individuals']
-    info_individuals = original_data['info_individuals']
-    dataset_obj_individuals = original_data['dataset_obj_individuals']
-
-cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
-part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
-
-# fit the emission model to the data
-# K is the number of parcels
-K = ar_model.K
-# Make a design matrix
-X= ut.indicator(cond_vec)
-# Build an emission model
-em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
-# Build the full model: The emission models are passed as a list, as usually we have multiple data sets
-M = fm.FullMultiModel(ar_model, [em_model])
-# Attach the data to the model - this is done for speed
-# The data is passed as a list with on element per data set
-M.initialize([data])
-
-# Now we can run the EM algorithm
-M, _, _, _ = M.fit_em(iter=200, tol=0.01,
-    fit_arrangement=False,fit_emission=True,first_evidence=False)
-
-M.initialize([data])
-U_indiv, _ = M.Estep()
+U = output['U']
+U_indiv = output['U_indiv']
 
 # Load colormap and labels
 # lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
@@ -85,33 +104,33 @@ flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 
 def plot_probseg(surf_data, cmap):
     label = np.argmax(surf_data, axis=0)+1
-    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label).reshape(1, -1))
+    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label.reshape(1, -1)))
 
     # left cortex
-    suit.flatmap.plot(label_L.reshape(-1, ),
-                      surf=flat_surf_L, alpha=1,
-                      label_names=names,
-                      new_figure=False,
-                      frame=None,
-                      render='matplotlib',
-                      cmap=cmap,
-                      # cscale=[0,31],
-                      overlay_type='label',
-                      bordersize=3,
+    flatmap.plot(label_L.reshape(-1, ),
+                  surf=flat_surf_L, alpha=1,
+                  label_names=names,
+                  new_figure=False,
+                  frame=None,
+                  render='matplotlib',
+                  cmap=cmap,
+                  # cscale=[0,31],
+                  overlay_type='label',
+                  bordersize=3,
     )
 
     # right cortex
-    suit.flatmap.plot(label_R.reshape(-1, ),
-                      surf=flat_surf_R, alpha=1,
-                      label_names=names,
-                      new_figure=False,
-                      frame=None,
-                      render='matplotlib',
-                      cmap=cmap,
-                      # cscale=[0, 31],
-                      overlay_type='label',
-                      bordersize=3,
-                      )
+    flatmap.plot(label_R.reshape(-1, ),
+                  surf=flat_surf_R, alpha=1,
+                  label_names=names,
+                  new_figure=False,
+                  frame=None,
+                  render='matplotlib',
+                  cmap=cmap,
+                  # cscale=[0, 31],
+                  overlay_type='label',
+                  bordersize=3,
+    )
 
 
 # Make a figure
