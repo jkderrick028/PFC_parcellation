@@ -109,7 +109,7 @@ def plot_probseg(surf_data, cmap):
     # left cortex
     flatmap.plot(label_L.reshape(-1, ),
                  surf=flat_surf_L,
-                 underlay=flat_surf_L,
+                 underlay=os.path.join(surface_helpers_dir, 'original', 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
                  alpha=1,
                  label_names=names,
                  new_figure=False,
@@ -124,7 +124,7 @@ def plot_probseg(surf_data, cmap):
     # right cortex
     flatmap.plot(label_R.reshape(-1, ),
                  surf=flat_surf_R,
-                 underlay=flat_surf_R,
+                 underlay=os.path.join(surface_helpers_dir, 'original', 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
                  alpha=1,
                  label_names=names,
                  new_figure=False,

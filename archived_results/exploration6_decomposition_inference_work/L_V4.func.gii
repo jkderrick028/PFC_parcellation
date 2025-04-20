@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GIFTI xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="http://brainvis.wustl.edu/caret6/xml_schemas/GIFTI_Caret.xsd"
+       Version="1"
+       NumberOfDataArrays="1">
+   <MetaData>
+      <MD>
+         <Name><![CDATA[AnatomicalStructurePrimary]]></Name>
+         <Value><![CDATA[CortexLeft]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[ParentProvenance]]></Name>
+         <Value><![CDATA[/home/ROBARTS/jxiang/jxiang27_beluga/7T_exploration/code/../surface_helpers/glasser.L.label.gii:
+/Applications/workbench/bin_macosx64/../macosx64_apps/wb_command.app/Contents/MacOS/wb_command -cifti-separate Glasser_2016.32k.L.dlabel.nii COLUMN -label CORTEX_LEFT Glasser_2016.32k.L.label.gii
+
+]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[ProgramProvenance]]></Name>
+         <Value><![CDATA[Connectome Workbench
+Type: Command Line Application
+Version: 1.4.2
+Qt Compiled Version: 5.7.0
+Qt Runtime Version: 5.7.0
+Commit: b527c79e526a558637f37c202af18c78cd98fa22
+Commit Date: 2021-02-11 13:49:38 -0600
+Compiled with OpenMP: YES
+Compiler: g++ (/home/caret/gcc/install/gcc-4.8.5/bin)
+Compiler Version: 4.8.5
+Compiled Debug: NO
+Operating System: Linux
+]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[Provenance]]></Name>
+         <Value><![CDATA[/srv/software/connectome_workbench/1.5.0/bin_linux64/../exe_linux64/wb_command -gifti-label-to-roi /home/ROBARTS/jxiang/jxiang27_beluga/7T_exploration/code/../surface_helpers/glasser.L.label.gii /home/ROBARTS/jxiang/jxiang27_beluga/7T_exploration/code/../results/exploration6_decomposition_inference_work/L_V4.func.gii -name L_V4_ROI]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[WorkingDirectory]]></Name>
+         <Value><![CDATA[/home/ROBARTS/jxiang/jxiang27_beluga/7T_exploration/code]]></Value>
+      </MD>
+   </MetaData>
+   <LabelTable>
+      <Label Key="0" Red="1" Green="1" Blue="1" Alpha="0"><![CDATA[???]]></Label>
+   </LabelTable>
+<DataArray Intent="NIFTI_INTENT_NORMAL"
+           DataType="NIFTI_TYPE_FLOAT32"
+           ArrayIndexingOrder="RowMajorOrder"
+           Dimensionality="1"
+           Dim0="32492"
+           Encoding="GZipBase64Binary"
+           Endian="LittleEndian"
+           ExternalFileName=""
+           ExternalFileOffset="0">
+   <MetaData>
+      <MD>
+         <Name><![CDATA[Name]]></Name>
+         <Value><![CDATA[#1]]></Value>
+      </MD>
+   </MetaData>
+   <Data>eJzt3TEOgzAQBEB+lq/l6REFCh0KAd+tmZGogPMuKYJE4WUBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAcr1f3wMAAAAAACDN/lvHv0c3s/ba6NS/z2qmLqtZemz2WRPzAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA8GxHe47/snd3l32+Z9hHfe8pfRLN2iOR/HVSsyfmTs2bkjkla0LOhN++a76u/8kdc3V7D+uep0uOqizVGaqfQ9XaVb1Hrzm656i1RvW6e53U+aPmdpt51awrnl+HGWfvPbvu3ffcce0V15w5V/2uBwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPNEHeLrjkA==</Data>
+</DataArray>
+</GIFTI>

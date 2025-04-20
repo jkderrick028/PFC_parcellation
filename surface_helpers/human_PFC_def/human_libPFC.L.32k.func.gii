@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GIFTI xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:noNamespaceSchemaLocation="http://brainvis.wustl.edu/caret6/xml_schemas/GIFTI_Caret.xsd"
+       Version="1"
+       NumberOfDataArrays="1">
+   <MetaData>
+      <MD>
+         <Name><![CDATA[AnatomicalStructurePrimary]]></Name>
+         <Value><![CDATA[CortexLeft]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[PaletteNormalizationMode]]></Name>
+         <Value><![CDATA[NORMALIZATION_SELECTED_MAP_DATA]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[ParentProvenance]]></Name>
+         <Value><![CDATA[/media/myelin/chad/pfcCom/mmp_atlas/Q1-Q6_RelatedValidation210/32k_ROIs/merged_libROI.L.32k.dscalar.nii:
+/home/brainmappers/workbench/fetchdir/wb_command.18155 -cifti-reduce /media/myelin/chad/pfcCom/mmp_atlas/Q1-Q6_RelatedValidation210/32k_ROIs/merged_libROI.L.32k.dscalar.nii MAX /media/myelin/chad/pfcCom/mmp_atlas/Q1-Q6_RelatedValidation210/32k_ROIs/merged_libROI.L.32k.dscalar.nii
+
+]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[ProgramProvenance]]></Name>
+         <Value><![CDATA[Connectome Workbench
+Type: Command Line Application
+Version: 1.2.3
+Qt Compiled Version: 5.7.0
+Qt Runtime Version: 5.7.0
+Commit: fd90fd460dc6db1096c896dda73b1f5e9018c09f
+Commit Date: 2017-11-17 14:31:57 -0600
+Compiled with OpenMP: YES
+Compiler: g++ (/home/caret/gcc/install/gcc-4.8.5/bin)
+Compiler Version: 4.8.5
+Compiled Debug: NO
+Operating System: Linux
+]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[Provenance]]></Name>
+         <Value><![CDATA[/home/brainmappers/workbench/fetchdir/wb_command.18183 -cifti-separate /media/myelin/chad/pfcCom/mmp_atlas/Q1-Q6_RelatedValidation210/32k_ROIs/merged_libROI.L.32k.dscalar.nii COLUMN -metric CORTEX_LEFT /media/myelin/chad/pfcCom/mmp_atlas/Q1-Q6_RelatedValidation210/32k_ROIs/merged_libROI.L.32k.func.gii]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[WorkingDirectory]]></Name>
+         <Value><![CDATA[/media/myelin/chad/pfcCom]]></Value>
+      </MD>
+   </MetaData>
+   <LabelTable>
+      <Label Key="0" Red="1" Green="1" Blue="1" Alpha="0"><![CDATA[???]]></Label>
+   </LabelTable>
+<DataArray Intent="NIFTI_INTENT_NORMAL"
+           DataType="NIFTI_TYPE_FLOAT32"
+           ArrayIndexingOrder="RowMajorOrder"
+           Dimensionality="1"
+           Dim0="32492"
+           Encoding="GZipBase64Binary"
+           Endian="LittleEndian"
+           ExternalFileName=""
+           ExternalFileOffset="0">
+   <MetaData>
+      <MD>
+         <Name><![CDATA[Name]]></Name>
+         <Value><![CDATA[MAX]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[PaletteColorMapping]]></Name>
+         <Value><![CDATA[<PaletteColorMapping Version="1">
+   <ScaleMode>MODE_AUTO_SCALE_PERCENTAGE</ScaleMode>
+   <AutoScalePercentageValues>98.000000 2.000000 2.000000 98.000000</AutoScalePercentageValues>
+   <AutoScaleAbsolutePercentageValues>2.000000 98.000000</AutoScaleAbsolutePercentageValues>
+   <UserScaleValues>-100.000000 0.000000 0.000000 100.000000</UserScaleValues>
+   <PaletteName>fsl_blue</PaletteName>
+   <InterpolatePalette>true</InterpolatePalette>
+   <InvertPalette>OFF</InvertPalette>
+   <DisplayPositiveData>true</DisplayPositiveData>
+   <DisplayZeroData>false</DisplayZeroData>
+   <DisplayNegativeData>true</DisplayNegativeData>
+   <ThresholdTest>THRESHOLD_TEST_SHOW_OUTSIDE</ThresholdTest>
+   <ThresholdType>THRESHOLD_TYPE_OFF</ThresholdType>
+   <ThresholdFailureInGreen>false</ThresholdFailureInGreen>
+   <ThresholdNormalValues>-1.000000 1.000000</ThresholdNormalValues>
+   <ThresholdMappedValues>-1.000000 1.000000</ThresholdMappedValues>
+   <ThresholdMappedAvgAreaValues>-1.000000 1.000000</ThresholdMappedAvgAreaValues>
+   <ThresholdDataName></ThresholdDataName>
+   <ThresholdRangeMode>PALETTE_THRESHOLD_RANGE_MODE_FILE</ThresholdRangeMode>
+   <ThresholdLowHighLinked>false</ThresholdLowHighLinked>
+   <HistogramRangeMode>PALETTE_HISTOGRAM_RANGE_ALL</HistogramRangeMode>
+   <HistogramBarsVisible>true</HistogramBarsVisible>
+   <HistogramEnvelopeVisible>false</HistogramEnvelopeVisible>
+   <HistogramBarsColor>CUSTOM</HistogramBarsColor>
+   <HistogramEnvelopeColor>RED</HistogramEnvelopeColor>
+   <HistogramEnvelopeLineWidthPercentage>0.5</HistogramEnvelopeLineWidthPercentage>
+   <HistogramNumberOfBuckets>100</HistogramNumberOfBuckets>
+   <NumericFormatMode>AUTO</NumericFormatMode>
+   <PrecisionDigits>2</PrecisionDigits>
+   <NumericSubivisions>0</NumericSubivisions>
+   <ColorBarValuesMode>DATA</ColorBarValuesMode>
+   <ShowTickMarksSelected>false</ShowTickMarksSelected>
+</PaletteColorMapping>
+]]></Value>
+      </MD>
+      <MD>
+         <Name><![CDATA[UniqueID]]></Name>
+         <Value><![CDATA[{dd0da10a-ae31-44f7-995d-0d897800a5bd}]]></Value>
+      </MD>
+   </MetaData>
+   <Data>eJzt3UFS21AQBFBuxtVy9CwoKi6CsYSkPz2j96p6kYA1PXJwiBzjt7dPf94/8vhrAAAAAAAA4Fyfz8t1zd1NPjcT95q206R9Juwy4fGg+w6d+3ft3rF3t86d+nbp2qFnesfkfqndEnuldUrqk9Dlpw6reqR3mDo7be7keR3nXH3erjz+6mOf5cquZx7vrGMlHANY69X3fNX/TgAAAAAA4F72Xpfee01763XwrdfMt3zenmvxCZmq2zlw/32Yutv0vaaYuM8EE/aYsAMAAABAuq3X1Kufl/F8wPfusCMAAAAAADCX5zoAAAAAAADgWtNf11X9+rU7vqYNAAAAeK762kDF/KRrQitnXTFz1bWn6utnIiLyfwAAAAAAAAAAAAAAAAAAAAAAAIDn/OwuAAAAAACgs73vV1L9Xiqp778ydTd79dhp0j52ydqj+w6d++s+989Mt86d+nbp2qFnesfkfqndEnuldUrqo0dOh+6zK+aunpk+L3lO2oyOx77iuMnHSzrO0WPscdb9/pvb8drex7KOOXp+tp6nFNXn++r7Izn2mrtTdd8z96nuetYu1T3P2KO64537V/eb1Ltb5059p3St7ralZ3WvVx2rO3XsVt2nQ6fqLo999PjX467zq2ZXzK2+n0VEpC7P/g74+vuP35sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP6t+XxLZ9x4uU++7iXtN22nKPpO+jibs0X2Hzv27du/Yu1vnrn2re2ztWt1hQkcREREREREREREREZGKpD0vlfr/H9I6JfVJ6ZLQo7pD5fyq2dVzJ85bNWvFnFUzuh27+vF6dY7ue/Rx5qvVHc647YrbXLHPls878vErvpYAAAAAAIDp/gL1WOVF</Data>
+</DataArray>
+</GIFTI>

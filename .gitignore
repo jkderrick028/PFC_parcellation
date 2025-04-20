@@ -8,6 +8,8 @@
 ![0-9a-zA-Z]*.md
 ![0-9a-zA-Z]*.ipynb
 ![0-9a-zA-Z]*.json
+![0-9a-zA-Z]*.gii
+![0-9a-zA-Z]*.nii
 !/surface_helpers/
 !/surface_helpers/*
 

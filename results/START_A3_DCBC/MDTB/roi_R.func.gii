@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE GIFTI SYSTEM "http://www.nitrc.org/frs/download.php/115/gifti.dtd">
+<GIFTI Version="1.0" NumberOfDataArrays="1"><MetaData><MD><Name>ProgramProvenance</Name><Value>Workbench
+Version: Beta 0.84
+Qt Compiled Version: 4.8.3
+Qt Runtime Version: 4.8.3
+commit: 83b15f53bfa130431fe0ee9f0a81fd7ccd836286
+commit date: 2013-12-20 10:38:59 -0600
+Compiled Debug: NO
+Operating System: Apple OSX</Value></MD><MD><Name>Provenance</Name><Value>/usr/local/workbench/bin_macosx64/../macosx64_apps/wb_command.app/Contents/MacOS/wb_command -surface-cut-resample ../Q1-2-3_Related196.R.flat.clean.164k_fs_LR.surf.gii ../Q1-2-3_Related196.R.sphere.164k_fs_LR.surf.gii Q1-2-3_Related196.R.sphere.32k_fs_LR.surf.gii Q1-2-3_Related196.R.flat.clean.32k_fs_LR.surf.gii</Value></MD><MD><Name>WorkingDirectory</Name><Value>/Users/vanessen/BRAIN_MAP_DATA/Connectome_Project/HCP_PhaseII/Q1-2-3_Related196/MNINonLinear/fsaverage_LR32k</Value></MD></MetaData><LabelTable /><DataArray Intent="NIFTI_INTENT_NONE" DataType="NIFTI_TYPE_FLOAT32" ArrayIndexingOrder="RowMajorOrder" Dimensionality="1" Encoding="GZipBase64Binary" Endian="LittleEndian" ExternalFileName="" ExternalFileOffset="0" Dim0="32492"><MetaData /><CoordinateSystemTransformMatrix><DataSpace>NIFTI_XFORM_UNKNOWN</DataSpace><TransformedSpace>NIFTI_XFORM_UNKNOWN</TransformedSpace><MatrixData>  1.000000   0.000000   0.000000   0.000000
+  0.000000   1.000000   0.000000   0.000000
+  0.000000   0.000000   1.000000   0.000000
+  0.000000   0.000000   0.000000   1.000000</MatrixData></CoordinateSystemTransformMatrix><Data>eJzt3Vtu4kAQBdDsLFvL0vOBkBAyGDfurofPkepjBlx9yxAnsUX883P393urx38DAAAAAAAA89yv0VUqbrrum45zdZupyzxdjjEd5qg8Q/XvV1WzV8td7X1SKW+VrNVzZpE5X9ZsGXNlypTpazNLlgw5ojNkXT9izah1O6y3aq3Idar0X9m7Qs8z+2XpA9QX/fMXAAAAAAA5jZ4nHj3PPLLd0W2OPP/T537yvL3z7+8e33rs3bn9keqqyqxev22dZwMAAAAA6GDkPO7I9aNPn3fk+s/e46+e8+n1nBnV3RVmBAAAAAAAAAAAAAAAAMas+AxX5Ge7Iue76mfaAAAAyCHT76BZsmTIEZ3hcf3VWbKcG1q93qw1V52Dmn3ea+Y5tujzgEopdWYBAAAAAAAAAAAAAAAAAAAAAAAAr/n7XQAAAAAAQHWj9y2Jvq9KpvuvdJ2t41zdZuo0T6dZIubpMMdMlfPLvja3zHXzznLFnDN1zydX3eNLpjwdc1TNUH3tiHVXr5l9vU7rVO5fqe+IVf1Gzfga/LYHuT2/Rs/vn5Fjf+Ua2X9Ra58hen+/2xdnHcOylrn6zhSd1yx15rjSDNE5O2bfmyE648i+j87VIW/1rNGZOmSMzlMxW3SWCpmic2TMIsP1yj5XSim1sra+72z9PAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABnM/hv6M/vP6j2j79k9z+x3Vq8z+nzb45vtR7cd2c69K8ZE35dEHbuHS8fXruNc3WbqMk+nY2CHOarPUDl/l+zRWa6QOTpHx6zRGTpkVEoppZRSSimllFJKKaWUUrfKeC0yU6ZM18azZMmQI1uGq8wese7KNVfv21VrrV6nYv9ZvWf0ndUzU7aRPo/bjL7nt8ze9pXIbY72P9rz6Gu+99je/x3JDgAAAAAAdPMPKTtitA==</Data></DataArray></GIFTI>
