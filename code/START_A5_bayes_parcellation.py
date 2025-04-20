@@ -100,7 +100,7 @@ lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'
 
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
-
+border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
 def plot_probseg(surf_data, cmap):
     label = np.argmax(surf_data, axis=0)+1
@@ -116,6 +116,7 @@ def plot_probseg(surf_data, cmap):
                  frame=None,
                  render='matplotlib',
                  cmap=cmap,
+                 borders=border_LR,
                  # cscale=[0,31],
                  overlay_type='label',
                  bordersize=3,
@@ -131,6 +132,7 @@ def plot_probseg(surf_data, cmap):
                  frame=None,
                  render='matplotlib',
                  cmap=cmap,
+                 borders=border_LR,
                  # cscale=[0, 31],
                  overlay_type='label',
                  bordersize=3,

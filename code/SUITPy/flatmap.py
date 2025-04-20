@@ -25,7 +25,6 @@ from matplotlib.cm import ScalarMappable, get_cmap
 from matplotlib.colorbar import make_axes
 from matplotlib.colors import Normalize, LinearSegmentedColormap
 import warnings
-from nitools.border import read_borders
 
 _base_dir = os.path.dirname(os.path.abspath(__file__))
 _surf_dir = os.path.join(_base_dir, 'surfaces')
@@ -405,8 +404,7 @@ def plot(data,
         if borders.endswith('.txt'):
             borders = np.genfromtxt(borders, delimiter=',')
         elif borders.endswith('.border'):
-            # border_list,_ = nt.read_borders(borders)
-            border_list, _ = read_borders(borders)
+            border_list,_ = nt.read_borders(borders)
             borders = [b.get_coords(flatsurf) for b in border_list]
             borders = np.vstack(borders)
         else:
@@ -576,7 +574,7 @@ def _render_matplotlib(vertices,faces,face_color,borders,
     patches = []
 
     for i,f in enumerate(faces[face_in]):
-        polygon = Polygon(vertices[f,0:2], True)
+        polygon = Polygon(vertices[f,0:2])
         patches.append(polygon)
     p = PatchCollection(patches)
     p.set_facecolor(face_color[face_in])
@@ -714,7 +712,7 @@ def _render_plotly(vertices,faces,color,borders,
 
 def _make_labels(data,labelstr):
     numvert=data.shape[0]
-    labels = np.empty((data.shape[0],),dtype=np.object)
+    labels = np.empty((data.shape[0],),dtype=object)
     if type(labelstr) is str:
         for i in range(numvert):
             if data.ndim==1:
