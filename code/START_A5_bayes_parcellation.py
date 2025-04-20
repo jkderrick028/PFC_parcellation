@@ -102,57 +102,69 @@ flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
-def plot_probseg(surf_data, cmap):
+def plot_probseg(surf_data, cmap, hemi):
     label = np.argmax(surf_data, axis=0)+1
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label.reshape(1, -1)))
 
-    # left cortex
-    flatmap.plot(label_L.reshape(-1, ),
-                 surf=flat_surf_L,
-                 underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
-                 alpha=1,
-                 label_names=names,
-                 new_figure=False,
-                 frame=None,
-                 render='matplotlib',
-                 cmap=cmap,
-                 borders=border_LR,
-                 # cscale=[0,31],
-                 overlay_type='label',
-                 bordersize=3,
-    )
+    if hemi == 'L':
+        # left cortex
+        flatmap.plot(label_L.reshape(-1, ),
+                     surf=flat_surf_L,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     label_names=names,
+                     new_figure=False,
+                     frame=None,
+                     render='matplotlib',
+                     cmap=cmap,
+                     borders=border_LR,
+                     # cscale=[0,31],
+                     overlay_type='label',
+                     bordersize=3,
+        )
 
-    # right cortex
-    flatmap.plot(label_R.reshape(-1, ),
-                 surf=flat_surf_R,
-                 underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
-                 alpha=1,
-                 label_names=names,
-                 new_figure=False,
-                 frame=None,
-                 render='matplotlib',
-                 cmap=cmap,
-                 borders=border_LR,
-                 # cscale=[0, 31],
-                 overlay_type='label',
-                 bordersize=3,
-    )
+    else:
+        # right cortex
+        flatmap.plot(label_R.reshape(-1, ),
+                     surf=flat_surf_R,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     label_names=names,
+                     new_figure=False,
+                     frame=None,
+                     render='matplotlib',
+                     cmap=cmap,
+                     borders=border_LR,
+                     # cscale=[0, 31],
+                     overlay_type='label',
+                     bordersize=3,
+        )
 
-
-# Make a figure
-plt.figure(figsize=(20,5))
 
 # Make a nifti image of the first subject
 surf_data = U.detach().numpy()
 
 # plot the group probabilistic atlas
-plt.subplot(1, 4, 1, title='group')
-plot_probseg(surf_data, cmap)
+plt.figure()
+plt.subplot(1, 2, 1)
+plot_probseg(surf_data, cmap, 'L')
+plt.subplot(1, 2, 2)
+plot_probseg(surf_data, cmap, 'R')
+plt.suptitle('group')
 
 # plot 3 individual subjects
 for i,s in enumerate([6,9,12]):
-    plt.subplot(1,4,i+2,title=f'subject {s}')
     surf_data = U_indiv[s].detach().numpy()
-    plot_probseg(surf_data, cmap)
+
+    plt.figure()
+    plt.subplot(1, 2, 1)
+    plot_probseg(surf_data, cmap, 'L')
+    plt.subplot(1, 2, 2)
+    plot_probseg(surf_data, cmap, 'R')
+    plt.suptitle(f'subject {s}')
+
+
+# JPG_fig = os.path.join(resultsPath, 'example_parcellations.jpg')
+# plt.savefig(JPG_fig, format='jpg', dpi=400)
 
 pass
