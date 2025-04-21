@@ -18,11 +18,14 @@ import nitools as nt
 import scipy.io as spio
 from scipy.sparse import block_diag, coo_matrix
 import scipy.ndimage as snd
+from py_util_dx.py_utils import setProjectPath
+
 
 # Set directories for the entire project - just set here and import everywhere
 # else
 # model_dir = 'Y:/data/Cerebellum/ProbabilisticParcellationModel'
-model_dir = '/Users/jkderrick028/Documents/Projects/7TfMRI/7T_exploration'
+projectPath, mainResultsPath = setProjectPath()
+model_dir = projectPath
 home = str(Path.home())
 if not Path(model_dir).exists():
     model_dir = '/srv/diedrichsen/data/Cerebellum/ProbabilisticParcellationModel'
