@@ -46,7 +46,7 @@ U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas, sym_type='sym')
+ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
 
 # loading MDTB data
 PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
