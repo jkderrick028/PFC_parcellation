@@ -7,7 +7,7 @@ import Functional_Fusion.atlas_map as am
 import Functional_Fusion.dataset as dt
 import pandas as pd
 import torch as pt
-import json
+import json, os 
 import matplotlib.pyplot as plt
 import HierarchBayesParcel.evaluation as ev
 import HierarchBayesParcel.full_model as fm
@@ -43,7 +43,9 @@ if not Path(model_dir).exists():
     raise (NameError('Could not find model_dir'))
 
 # base_dir = '/Volumes/diedrichsen_data$/data/FunctionalFusion'
-base_dir = '/Users/jkderrick028/Documents/Projects/7TfMRI/7T_exploration/code/Functional_Fusion'
+# base_dir = '/Users/jkderrick028/Documents/Projects/7TfMRI/7T_exploration/code/Functional_Fusion'
+base_dir = os.path.join(projectPath, 'Functional_Fusion')
+
 if not Path(base_dir).exists():
     base_dir = '/srv/diedrichsen/data/FunctionalFusion'
 if not Path(base_dir).exists():
