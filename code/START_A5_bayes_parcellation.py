@@ -35,57 +35,57 @@ output = {}
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
-# # Sample the probabilistic atlas at the specific atlas grayordinates
-# # atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
-# atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
-# U = atlas.read_data(atlas_fname)
-# U = U.T
-#
-# # converting the hard parcellation into a probabilistic one
-# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
-#
-# # Build the arrangement model - the parameters are the log-probabilities of the atlas
-# # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-# ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
-#
-# # loading MDTB data
-# PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
-# with open(PKL_data, 'rb') as pf:
-#     original_data = pickle.load(pf)
-#     data = original_data['X_individuals']
-#     info_individuals = original_data['info_individuals']
-#     dataset_obj_individuals = original_data['dataset_obj_individuals']
-#
-# cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
-# part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
-#
-# # fit the emission model to the data
-# # K is the number of parcels
-# K = ar_model.K
-# # Make a design matrix
-# X= ut.indicator(cond_vec)
-# # Build an emission model
-# em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
-# # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
-# M = fm.FullMultiModel(ar_model, [em_model])
-# # Attach the data to the model - this is done for speed
-# # The data is passed as a list with on element per data set
-# M.initialize([data])
-#
-# # Now we can run the EM algorithm
-# M, _, _, _ = M.fit_em(iter=200, tol=0.01,
-#     fit_arrangement=False,fit_emission=True,first_evidence=False)
-#
+# Sample the probabilistic atlas at the specific atlas grayordinates
+# atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
+atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
+U = atlas.read_data(atlas_fname)
+U = U.T
+
+# converting the hard parcellation into a probabilistic one
+U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+
+# Build the arrangement model - the parameters are the log-probabilities of the atlas
+# ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
+ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas, sym_type='sym')
+
+# loading MDTB data
+PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+with open(PKL_data, 'rb') as pf:
+    original_data = pickle.load(pf)
+    data = original_data['X_individuals']
+    info_individuals = original_data['info_individuals']
+    dataset_obj_individuals = original_data['dataset_obj_individuals']
+
+cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
+part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+
+# fit the emission model to the data
+# K is the number of parcels
+K = ar_model.K
+# Make a design matrix
+X= ut.indicator(cond_vec)
+# Build an emission model
+em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
+# Build the full model: The emission models are passed as a list, as usually we have multiple data sets
+M = fm.FullMultiModel(ar_model, [em_model])
+# Attach the data to the model - this is done for speed
+# The data is passed as a list with on element per data set
+M.initialize([data])
+
+# Now we can run the EM algorithm
+# M, _, _, _ = M.fit_em(iter=200, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
+M, _, _, U_indiv = M.fit_em(iter=200, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
+
 # M.initialize([data])
 # U_indiv, _ = M.Estep()
-#
-#
-# # saving U and U_indiv
-# output['U'] = U
-# output['U_indiv'] = U_indiv
-#
-# with open(PKL_output, 'wb') as pf:
-#     pickle.dump(output, pf)
+
+
+# saving U and U_indiv
+output['U'] = U
+output['U_indiv'] = U_indiv
+
+with open(PKL_output, 'wb') as pf:
+    pickle.dump(output, pf)
 
 # loading saved U and U_indiv
 with open(PKL_output, 'rb') as pf:
