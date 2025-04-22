@@ -74,15 +74,23 @@ M.initialize([data])
 
 # Now we can run the EM algorithm
 # M, _, _, _ = M.fit_em(iter=200, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
-M, _, _, U_indiv = M.fit_em(iter=200, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
+M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=200, tol=0.01, fit_arrangement=True,
+                                           fit_emission=True, init_arrangement=True,
+                                           init_emission=True, n_inits=50, first_iter=30,
+                                           verbose=False)
 
 # M.initialize([data])
 # U_indiv, _ = M.Estep()
 
+# printing kappa
+print(f'kappa: {M.emissions[0].kappa}')
 
 # saving U and U_indiv
 output['U'] = U
 output['U_indiv'] = U_indiv
+output['M'] = M
+output['ll'] = ll
+output['theta'] = theta
 
 with open(PKL_output, 'wb') as pf:
     pickle.dump(output, pf)
@@ -163,6 +171,10 @@ for i,s in enumerate([6,9,12]):
     plot_probseg(surf_data, cmap, 'R')
     plt.suptitle(f'subject {s}')
 
+
+# inspect model training
+plt.figure(figsize=(5,5))
+plt.plot(ll)
 
 # JPG_fig = os.path.join(resultsPath, 'example_parcellations.jpg')
 # plt.savefig(JPG_fig, format='jpg', dpi=400)
