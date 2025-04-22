@@ -101,6 +101,7 @@ with open(PKL_output, 'rb') as pf:
 
 U = output['U']
 U_indiv = output['U_indiv']
+ll = output['ll']
 
 # Load colormap and labels
 # lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
