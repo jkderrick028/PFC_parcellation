@@ -42,7 +42,7 @@ U = atlas.read_data(atlas_fname)
 U = U.T
 
 # converting the hard parcellation into a probabilistic one
-U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=20.0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
