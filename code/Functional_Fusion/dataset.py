@@ -692,8 +692,11 @@ class DataSet:
         # Loop over the different subjects to find the most complete info
         for s in T.participant_id.iloc[subj]:
             # Get an check the information
+            # info_raw = pd.read_csv(self.data_dir.format(s)
+            #                        + f'/{s}_{ses_id}_{type}.tsv', sep='\t')
             info_raw = pd.read_csv(self.data_dir.format(s)
-                                   + f'/{s}_{ses_id}_{type}.tsv', sep='\t')
+                                   + f'/{s}_{ses_id}_info-{type}.tsv', sep='\t')
+
             # Reduce tsv file when fields are given
             if fields is not None:
                 info = info_raw[fields]

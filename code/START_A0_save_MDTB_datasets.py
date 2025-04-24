@@ -11,7 +11,8 @@ This script loads MDTB dataset and saves as pkl files.
 
 projectPath, mainResultsPath = setProjectPath()
 # base_dir = '/Volumes/diedrichsen_data$/data/FunctionalFusion'
-base_dir = '/cifs/diedrichsen/data/FunctionalFusion'
+# base_dir = '/cifs/diedrichsen/data/FunctionalFusion'
+base_dir = os.path.join(projectPath, 'data', 'FunctionalFusion')
 # base_dir = '/Users/jkderrick028/jxiang27_graham/scratch/7T_exploration/data/FunctionalFusion'
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -31,19 +32,42 @@ atlas, ainf = am.get_atlas(atlas_str)
 #                                                         sess='all',
 #                                                         type='CondAll')
 
-# loading individual data condAll
+# # loading individual data condAll
+# dataset_name = 'MDTB'
+# X_individuals, info_individuals, dataset_obj_individuals = ds.get_dataset(base_dir,
+#                                                                           dataset=dataset_name,
+#                                                                           atlas='fs32k',
+#                                                                           subj=None,
+#                                                                           sess='all',
+#                                                                           type='CondAll')
 
+# # loading individual data condAll, ses-s1
+# dataset_name = 'MDTB'
+# X_individuals, info_individuals, dataset_obj_individuals = ds.get_dataset(base_dir,
+#                                                                           dataset=dataset_name,
+#                                                                           atlas='fs32k',
+#                                                                           subj=None,
+#                                                                           sess='ses-s1',
+#                                                                           type='CondAll')
+#
+# data = {'X_individuals': X_individuals, 'info_individuals': info_individuals, 'dataset_obj_individuals': dataset_obj_individuals}
+#
+# PKL_data = os.path.join(resultsPath, f'{dataset_name}_Cond_All_ses-s1.pkl')
+# with open(PKL_data, 'wb') as pf:
+#     pickle.dump(data, pf)
+
+
+# loading individual data condAll, ses-s2
 dataset_name = 'MDTB'
 X_individuals, info_individuals, dataset_obj_individuals = ds.get_dataset(base_dir,
                                                                           dataset=dataset_name,
                                                                           atlas='fs32k',
                                                                           subj=None,
-                                                                          sess='all',
+                                                                          sess='ses-s2',
                                                                           type='CondAll')
 
 data = {'X_individuals': X_individuals, 'info_individuals': info_individuals, 'dataset_obj_individuals': dataset_obj_individuals}
 
-PKL_data = os.path.join(resultsPath, f'{dataset_name}_Cond_All.pkl')
+PKL_data = os.path.join(resultsPath, f'{dataset_name}_Cond_All_ses-s2.pkl')
 with open(PKL_data, 'wb') as pf:
     pickle.dump(data, pf)
-
