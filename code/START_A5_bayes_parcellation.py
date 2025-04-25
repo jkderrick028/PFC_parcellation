@@ -42,14 +42,23 @@ U = atlas.read_data(atlas_fname)
 U = U.T
 
 # converting the hard parcellation into a probabilistic one
-U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+
+_, U = np.unique(U, return_inverse=True)
+K = np.unique(U).size
+
+logpi = ar.expand_mn_1d(U, K)
+# Set parcel 0 to unassigned
+logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
+U = logpi
+
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
 ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
 
 # loading MDTB data
-PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1.pkl')
 with open(PKL_data, 'rb') as pf:
     original_data = pickle.load(pf)
     data = original_data['X_individuals']
