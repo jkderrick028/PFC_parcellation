@@ -6,12 +6,13 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 import DCBC.dcbc as DCBC
+from scipy.stats import ttest_ind
 
 
 """
 This script computes the vertex-vertex correlations of activity profiles within and between boundaries. 
 
-modified: 2025.03.10  
+modified: 2025.05.03  
 """
 
 
@@ -24,7 +25,6 @@ surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), dataset_name)
 if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
-
 
 # load cortical parcellation from label.gii file
 glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
@@ -56,16 +56,13 @@ atlas, ainf = am.get_atlas(atlas_str)
 # large_ROI = 'visual'
 # parcels_ROI = ['V1', 'V2', 'V3', 'V4']
 
-# large_ROI = 'somatosensory'
-# parcels_ROI = ['4', '3a', '3b', '1', '2']
+large_ROI = 'somatosensory'
+parcels_ROI = ['4', '3a', '3b', '1', '2']
 
-large_ROI = 'parietal'
-parcels_ROI = ['7AL', '7Am', '7Pm', '7PL', 'MIP', 'VIP', '7PC', 'LIPv', 'AIP', 'LIPd']
+# large_ROI = 'parietal'
+# parcels_ROI = ['7AL', '7Am', '7Pm', '7PL', 'MIP', 'VIP', '7PC', 'LIPv', 'AIP', 'LIPd']
 
 indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
-
-output = dict()
-PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
 
 # get all the vertices that are in the ROI list
 vertex_label_ROI, vertex_ind_ROI = [], []
@@ -143,12 +140,17 @@ n_subjects, n_conditions, n_vertices = data.shape
 results = []
 within_corrs = []
 between_corrs = []
+dcbc = []
+
+output = dict()
+PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
 
 for subjI in np.arange(n_subjects):
-    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=vertex_label_ROI, func=data[subjI].T, dist=spatialMat, backend='numpy')
+    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=vertex_label_ROI, func=data[subjI].T, dist=spatialMat, weighting=True, backend='numpy')
     results.append(myDCBC)
     within_corrs.append(myDCBC['corr_within'])
     between_corrs.append(myDCBC['corr_between'])
+    dcbc.append(myDCBC['DCBC'])
 
 within_corrs = np.array(within_corrs)
 between_corrs = np.array(between_corrs)
@@ -157,19 +159,33 @@ within_corrs_ste = np.std(within_corrs, axis=0) / np.sqrt(n_subjects)
 between_corrs_mean = np.mean(between_corrs, axis=0)
 between_corrs_ste = np.std(between_corrs, axis=0) / np.sqrt(n_subjects)
 
+## testing weather dcbc is significantly higher than 0
+dcbc = np.array(dcbc)
+ttest_result = ttest_ind(dcbc, 0, alternative='greater')
+significance_level = 0.05
+is_significant = ttest_result.pvalue < significance_level
+
 fig, ax = plt.subplots(1, 1)
 ax.errorbar(np.arange(0, 35, step=5), within_corrs_mean, yerr = within_corrs_ste)
 ax.errorbar(np.arange(0, 35, step=5), between_corrs_mean, yerr=between_corrs_ste)
 ax.set_xlabel('distance (mm)')
 ax.set_ylabel('vertex-to-vertex correlation')
-ax.set_title(f'{large_ROI} Glasser group')
 ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.legend(['within', 'between'], frameon=False)
+if is_significant:
+    ax.set_title(f'{large_ROI} Glasser group, dcbc significant')
+else:
+    ax.set_title(f'{large_ROI} Glasser group, dcbc not significant')
+
+JPG_fig = os.path.join(resultsPath, f'DCBC_{large_ROI}.jpg')
+plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 output['dcbc_results'] = results
 output['within_corrs'] = within_corrs
 output['between_corrs'] = between_corrs
+output['ttest_result'] = ttest_result
+output['DCBC'] = dcbc
 
 with open(PKL_output, 'wb') as pk:
     pickle.dump(output, pk)

@@ -28,7 +28,9 @@ if not os.path.exists(resultsPath):
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
-PKL_output = os.path.join(resultsPath, 'output.pkl')
+appendix = 'whole_cortex'   # or PFC masked
+
+PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
 
 # Get the atlas
@@ -41,7 +43,7 @@ atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path
 U = atlas.read_data(atlas_fname)
 U = U.T
 
-# converting the hard parcellation into a probabilistic one
+## converting the hard parcellation into a probabilistic one
 # U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
 
 _, U = np.unique(U, return_inverse=True)
@@ -51,6 +53,9 @@ logpi = ar.expand_mn_1d(U, K)
 # Set parcel 0 to unassigned
 logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
 U = logpi
+
+## dealing with PFC mask
+
 
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
@@ -186,7 +191,7 @@ for i,s in enumerate([6,9,12]):
 plt.figure(figsize=(5,5))
 plt.plot(ll)
 
-# JPG_fig = os.path.join(resultsPath, 'example_parcellations.jpg')
-# plt.savefig(JPG_fig, format='jpg', dpi=400)
+JPG_fig = os.path.join(resultsPath, f'example_parcellations_{appendix}.jpg')
+plt.savefig(JPG_fig, format='jpg', dpi=400)
 
 pass
