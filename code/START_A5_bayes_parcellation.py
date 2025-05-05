@@ -61,6 +61,7 @@ if appendix == 'PFC_masked':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 
     U_PFC_mask_inds = [i for i in np.arange(len(U)) if U[i] in labels_PFC]
+    U_PFC_mask_inds = np.array(U_PFC_mask_inds)
     U_masked = U[U_PFC_mask_inds]
     data = data[:, :, included_vtx_inds_LR]
     U = U_masked.copy()
