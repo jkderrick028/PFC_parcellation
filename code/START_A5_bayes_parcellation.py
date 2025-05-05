@@ -49,7 +49,7 @@ atlas, ainf = am.get_atlas(atlas_str)
 # Sample the probabilistic atlas at the specific atlas grayordinates
 atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
 U = atlas.read_data(atlas_fname)
-U_1d = U.copy()
+U_shape_orig = U.shape
 
 ## dealing with PFC mask
 if appendix == 'PFC_masked':
@@ -58,14 +58,12 @@ if appendix == 'PFC_masked':
     labels_PFC = [glasser_label_dict[k] for k in parcels]
     # labels_PFC = np.array(sorted(labels_PFC)) - 1
 
-    # included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 
-    # U = U[:, included_vtx_inds_LR]
-    # U = U[labels_PFC, :]
-    # data = data[:, :, included_vtx_inds_LR]
-    for i in np.arange(len(U)):
-        if U[i] not in labels_PFC:
-            U[i] = 0
+    U_PFC_mask_inds = [i for i in np.arange(len(U)) if U[i] in labels_PFC]
+    U_masked = U[U_PFC_mask_inds]
+    data = data[:, :, included_vtx_inds_LR]
+    U = U_masked.copy()
 
 
 ## converting the hard parcellation into a probabilistic one
@@ -88,7 +86,9 @@ K = ar_model.K
 # Make a design matrix
 X= ut.indicator(cond_vec)
 # Build an emission model
-em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
+# em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
+em_model = em.MixVMF(K=K,P=len(U), X=X,part_vec=part_vec)
+
 # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
 M = fm.FullMultiModel(ar_model, [em_model])
 # Attach the data to the model - this is done for speed
@@ -107,6 +107,16 @@ M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=200, tol=0.01, fit_arrangement=F
 
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
+
+## restoring U to the original shape (containing all vertices in the cortex)
+if appendix == 'PFC_masked':
+    U_restore = np.zeros(U_shape_orig)
+    U_restore[U_PFC_mask_inds] = U
+    U = U_restore.copy()
+
+    U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
+    U_indiv_restore[:, :, U_PFC_mask_inds] = U_indiv
+    U_indiv = U_indiv_restore.copy()
 
 # saving U and U_indiv
 output['U'] = U
