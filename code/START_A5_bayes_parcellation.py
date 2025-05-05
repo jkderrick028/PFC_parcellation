@@ -91,7 +91,7 @@ K = ar_model.K
 X= ut.indicator(cond_vec)
 # Build an emission model
 # em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
-em_model = em.MixVMF(K=K,P=len(U), X=X,part_vec=part_vec)
+em_model = em.MixVMF(K=K,P=U.shape[1], X=X,part_vec=part_vec)
 
 # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
 M = fm.FullMultiModel(ar_model, [em_model])
