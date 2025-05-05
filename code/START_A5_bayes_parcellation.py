@@ -187,7 +187,10 @@ def plot_probseg(surf_data, cmap, hemi):
 
 
 # Make a nifti image of the first subject
-surf_data = U.detach().numpy()
+if torch.is_tensor(U):
+    surf_data = U.detach().numpy()
+else:
+    surface_data = U.copy()
 
 # plot the group probabilistic atlas
 plt.figure()
@@ -199,7 +202,10 @@ plt.suptitle('group')
 
 # plot 3 individual subjects
 for i,s in enumerate([6,9,12]):
-    surf_data = U_indiv[s].detach().numpy()
+    if torch.is_tensor(U_indiv):
+        surf_data = U_indiv[s].detach().numpy()
+    else:
+        surf_data = U_indiv[s]
 
     plt.figure()
     plt.subplot(1, 2, 1)
