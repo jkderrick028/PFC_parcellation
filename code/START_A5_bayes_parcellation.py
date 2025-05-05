@@ -1,21 +1,16 @@
 import numpy as np
-import torch as pt
-import nibabel as nb
 import nitools as nt
-import pandas as pd
 import matplotlib.pyplot as plt
 import Functional_Fusion.atlas_map as am
-import Functional_Fusion.dataset as ds
 import HierarchBayesParcel.arrangements as ar
 import HierarchBayesParcel.emissions as em
 import HierarchBayesParcel.full_model as fm
 import HierarchBayesParcel.util as ut
-import SUITPy as suit
 from py_util_dx.py_utils import setProjectPath
 import os, pickle
-import IndividualParcellation
 from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
+from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -42,6 +37,7 @@ atlas, ainf = am.get_atlas(atlas_str)
 atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
 U = atlas.read_data(atlas_fname)
 U = U.T
+U_1d = U.copy()
 
 ## converting the hard parcellation into a probabilistic one
 # U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
@@ -54,15 +50,7 @@ logpi = ar.expand_mn_1d(U, K)
 logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
 U = logpi
 
-## dealing with PFC mask
-
-
-
-# Build the arrangement model - the parameters are the log-probabilities of the atlas
-# ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
-
-# loading MDTB data
+## loading MDTB data
 PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1.pkl')
 with open(PKL_data, 'rb') as pf:
     original_data = pickle.load(pf)
@@ -72,6 +60,24 @@ with open(PKL_data, 'rb') as pf:
 
 cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
 part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+
+## dealing with PFC mask
+if appendix == 'PFC_masked':
+    parcels = get_roi_pacels('PFC')
+    glasser_label_dict = get_glasser_labels()
+    labels_PFC = [glasser_label_dict[k] for k in parcels]
+    labels_PFC = np.array(sorted(labels_PFC)) - 1
+
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+
+    U = U[:, included_vtx_inds_LR]
+    U = U[labels_PFC, :]
+    data = data[:, :, included_vtx_inds_LR]
+
+
+# Build the arrangement model - the parameters are the log-probabilities of the atlas
+# ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
+ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
 
 # fit the emission model to the data
 # K is the number of parcels
@@ -187,11 +193,14 @@ for i,s in enumerate([6,9,12]):
     plt.suptitle(f'subject {s}')
 
 
+JPG_fig = os.path.join(resultsPath, f'example_parcellations_{appendix}.jpg')
+plt.savefig(JPG_fig, format='jpg', dpi=400)
+
 # inspect model training
 plt.figure(figsize=(5,5))
 plt.plot(ll)
 
-JPG_fig = os.path.join(resultsPath, f'example_parcellations_{appendix}.jpg')
+JPG_fig = os.path.join(resultsPath, f'll_training_{appendix}.jpg')
 plt.savefig(JPG_fig, format='jpg', dpi=400)
 
 pass

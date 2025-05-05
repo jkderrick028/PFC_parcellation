@@ -5,6 +5,7 @@ import nibabel as nib
 import pandas as pd
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
+from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
 from scipy.stats import ttest_ind
 
@@ -36,31 +37,19 @@ gii_file = nib.load(glasser_L)
 # gii_file = nib.load(glasser_R)
 parcels_inds = gii_file.darrays[0].data
 
-# label table: which can be exported using wb_command -label-export-table glasser_L
-TXT_label_L = os.path.join(surface_helpers_dir, 'glasser.L.label.txt')
-TXT_label_R = os.path.join(surface_helpers_dir, 'glasser.R.label.txt')
-
-label_table = pd.read_csv(TXT_label_L, header=None)
-all_parcels = [label_table.loc[k, :].to_string().split()[1].replace('_ROI', '').replace('L_', '') for k in np.arange(len(label_table)) if np.mod(k, 2) == 0]
-all_indices = [int(label_table.loc[k, :].to_string().split()[1]) for k in np.arange(len(label_table)) if np.mod(k, 2) == 1]
-dict_parcel_indices = {all_parcels[i]: all_indices[i] for i in np.arange(len(all_parcels))}
+dict_parcel_indices = get_glasser_labels()
 
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
 # defining ROIs
-# large_ROI = 'PFC'
-# parcels_ROI = ['OFC', '10pp', '10r', '8C', 's6-8', '25', 'p24', 'p47r', '46', 'a10p', '10d', '9m', '8Av', 'IFJp', '10v', '13l', '45', 'i6-8', '9-46d', 'IFJa', '47s', 'SFL', 'a24', 'IFSp', '47m', '9p', '9a', 'pOFC', '8Ad', '11l', 'IFSa', 'a9-46v', '44', 'a47r', '55b', '47l', 's32', 'p9-46v', '8BM', 'p10p', '8BL', 'p32', 'a32pr', 'd32']    # PNAS paper
-
+large_ROI = 'PFC'
 # large_ROI = 'visual'
-# parcels_ROI = ['V1', 'V2', 'V3', 'V4']
-
-large_ROI = 'somatosensory'
-parcels_ROI = ['4', '3a', '3b', '1', '2']
-
+# large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
-# parcels_ROI = ['7AL', '7Am', '7Pm', '7PL', 'MIP', 'VIP', '7PC', 'LIPv', 'AIP', 'LIPd']
+
+parcels_ROI = get_roi_pacels(large_ROI)
 
 indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
 
@@ -80,43 +69,7 @@ spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs']
 spatialMat = spatialMat[vertex_ind_ROI, :]
 spatialMat = spatialMat[:, vertex_ind_ROI]
 
-gii_files = []
-for hemi in ['L', 'R']:
-    if hemi == 'L':
-        glasser_label = glasser_L
-        # flat_shape = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii')
-        # flat_shape = os.path.join(surface_helpers_dir, 'tpl-fs32k_hemi-L_flat.surf.gii')
-        flat_shape = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
-    else:
-        glasser_label = glasser_R
-        # flat_shape = os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii')
-        # flat_shape = os.path.join(surface_helpers_dir, 'tpl-fs32k_hemi-R_flat.surf.gii')
-        flat_shape = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
-
-    meta = nib.load(flat_shape).meta
-    out_gii_file = os.path.join(resultsPath, f'roi_{hemi}.func.gii')
-    roi_data = []
-    for roi in parcels_ROI:
-        hemi_roi = f'{hemi}_{roi}'
-        out_label = os.path.join(resultsPath, f'{hemi_roi}.func.gii')
-        wb_cmd = f'wb_command -gifti-label-to-roi {glasser_label} {out_label} -name {hemi_roi}_ROI'
-        subprocess.run(wb_cmd, shell=True)
-        roi_data.append(nib.load(out_label).agg_data())
-    roi_data = np.array(roi_data).sum(axis=0)
-    out_data = nib.gifti.gifti.GiftiImage(meta=meta)
-    out_data.add_gifti_data_array(nib.gifti.gifti.GiftiDataArray(data=roi_data))
-    nib.save(out_data, out_gii_file)
-    gii_files.append(out_gii_file)
-
-# roi L, R hemispheres
-label_vec, labels = atlas.get_parcel(gii_files)
-
-# only keep vertices that are within selected ROIs
-included_vtx_inds_LR = np.where(label_vec > 0)[0]
-included_vtx_inds_L = np.where(label_vec == 1)[0]
-included_vtx_inds_R = np.where(label_vec == 2)[0]
-excluded_vtx_inds_LR = np.where(label_vec == 0)[0]
-
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
 # loading MDTB dataset
 PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All.pkl')
