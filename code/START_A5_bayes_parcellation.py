@@ -114,8 +114,8 @@ print(f'kappa: {M.emissions[0].kappa}')
 
 ## restoring U to the original shape (containing all vertices in the cortex)
 if appendix == 'PFC_masked':
-    U_restore = np.zeros(U_shape_orig)
-    U_restore[U_PFC_mask_inds] = U
+    U_restore = np.zeros((U.shape[0], U_shape_orig[0]))
+    U_restore[:, U_PFC_mask_inds] = U
     U = U_restore.copy()
 
     U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
