@@ -72,7 +72,8 @@ if appendix == 'PFC_masked':
 _, U = np.unique(U, return_inverse=True)
 K = np.unique(U).size
 
-logpi = ar.expand_mn_1d(U, K)
+strength = 7.0
+logpi = ar.expand_mn_1d(U, K) * strength 
 
 if appendix == 'whole_cortex':
     # Set parcel 0 to unassigned
