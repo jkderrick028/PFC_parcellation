@@ -190,7 +190,7 @@ def plot_probseg(surf_data, cmap, hemi):
 if torch.is_tensor(U):
     surf_data = U.detach().numpy()
 else:
-    surface_data = U.copy()
+    surf_data = U.copy()
 
 # plot the group probabilistic atlas
 plt.figure()
