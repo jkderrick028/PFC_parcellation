@@ -58,13 +58,13 @@ if appendix == 'PFC_masked':
     labels_PFC = [glasser_label_dict[k] for k in parcels]
     # labels_PFC = np.array(sorted(labels_PFC)) - 1
 
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
-
     U_PFC_mask_inds = [i for i in np.arange(len(U)) if U[i] in labels_PFC]
     U_PFC_mask_inds = np.array(U_PFC_mask_inds)
     U_masked = U[U_PFC_mask_inds]
-    data = data[:, :, included_vtx_inds_LR]
     U = U_masked.copy()
+
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+    data = data[:, :, included_vtx_inds_LR]
 
 
 ## converting the hard parcellation into a probabilistic one
@@ -73,8 +73,11 @@ _, U = np.unique(U, return_inverse=True)
 K = np.unique(U).size
 
 logpi = ar.expand_mn_1d(U, K)
-# Set parcel 0 to unassigned
-logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
+
+if appendix == 'whole_cortex':
+    # Set parcel 0 to unassigned
+    logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
+
 U = torch.softmax(logpi, dim=0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
