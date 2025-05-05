@@ -10,6 +10,7 @@ from py_util_dx.py_utils import setProjectPath
 import os, pickle
 from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
+import torch
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 
 
@@ -23,32 +24,11 @@ if not os.path.exists(resultsPath):
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
-appendix = 'whole_cortex'   # or PFC masked
+# appendix = 'whole_cortex'   # or PFC_masked
+appendix = 'PFC_masked'
 
 PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
-
-# Get the atlas
-atlas_str = 'fs32k'
-atlas, ainf = am.get_atlas(atlas_str)
-
-# Sample the probabilistic atlas at the specific atlas grayordinates
-# atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
-atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
-U = atlas.read_data(atlas_fname)
-U = U.T
-U_1d = U.copy()
-
-## converting the hard parcellation into a probabilistic one
-# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
-
-_, U = np.unique(U, return_inverse=True)
-K = np.unique(U).size
-
-logpi = ar.expand_mn_1d(U, K)
-# Set parcel 0 to unassigned
-logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
-U = logpi
 
 ## loading MDTB data
 PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1.pkl')
@@ -61,19 +41,42 @@ with open(PKL_data, 'rb') as pf:
 cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
 part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
 
+## loading group atlas
+# Get the atlas
+atlas_str = 'fs32k'
+atlas, ainf = am.get_atlas(atlas_str)
+
+# Sample the probabilistic atlas at the specific atlas grayordinates
+atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
+U = atlas.read_data(atlas_fname)
+U_1d = U.copy()
+
 ## dealing with PFC mask
 if appendix == 'PFC_masked':
     parcels = get_roi_pacels('PFC')
     glasser_label_dict = get_glasser_labels()
     labels_PFC = [glasser_label_dict[k] for k in parcels]
-    labels_PFC = np.array(sorted(labels_PFC)) - 1
+    # labels_PFC = np.array(sorted(labels_PFC)) - 1
 
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+    # included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 
-    U = U[:, included_vtx_inds_LR]
-    U = U[labels_PFC, :]
-    data = data[:, :, included_vtx_inds_LR]
+    # U = U[:, included_vtx_inds_LR]
+    # U = U[labels_PFC, :]
+    # data = data[:, :, included_vtx_inds_LR]
+    for i in np.arange(len(U)):
+        if U[i] not in labels_PFC:
+            U[i] = 0
 
+
+## converting the hard parcellation into a probabilistic one
+# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+_, U = np.unique(U, return_inverse=True)
+K = np.unique(U).size
+
+logpi = ar.expand_mn_1d(U, K)
+# Set parcel 0 to unassigned
+logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
+U = torch.softmax(logpi, dim=0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
@@ -124,7 +127,6 @@ U_indiv = output['U_indiv']
 ll = output['ll']
 
 # Load colormap and labels
-# lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
 lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
 
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
