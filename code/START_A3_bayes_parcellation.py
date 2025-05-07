@@ -11,7 +11,7 @@ import os, pickle
 from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
 import torch
-from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
+from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -25,7 +25,8 @@ if not os.path.exists(resultsPath):
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
 # appendix = 'whole_cortex'   # or PFC_masked
-appendix = 'PFC_masked'
+# appendix = 'PFC_masked'
+appendix = 'somatosensory_masked'
 
 PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
@@ -56,6 +57,9 @@ if appendix == 'PFC_masked':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 if appendix == 'whole_cortex':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
+if appendix == 'somatosensory_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('somatosensory')
+
 data = data[:, :, included_vtx_inds_LR]
 U_roi = U[included_vtx_inds_LR]
 
@@ -102,14 +106,13 @@ M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=200, tol=0.01, fit_arrangement=F
 print(f'kappa: {M.emissions[0].kappa}')
 
 ## restoring U to the original shape (containing all vertices in the cortex)
-if appendix == 'PFC_masked' or appendix == 'whole_cortex':
-    U_restore = np.zeros((U_roi.shape[0], U_shape_orig[0]))
-    U_restore[:, included_vtx_inds_LR] = U_roi
-    U_roi = U_restore.copy()
+U_restore = np.zeros((U_roi.shape[0], U_shape_orig[0]))
+U_restore[:, included_vtx_inds_LR] = U_roi
+U_roi = U_restore.copy()
 
-    U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
-    U_indiv_restore[:, :, included_vtx_inds_LR] = U_indiv
-    U_indiv = U_indiv_restore.copy()
+U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
+U_indiv_restore[:, :, included_vtx_inds_LR] = U_indiv
+U_indiv = U_indiv_restore.copy()
 
 # saving U and U_indiv
 output['U'] = U

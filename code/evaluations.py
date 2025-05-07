@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial import distance
+import DCBC.dcbc as DCBC
 
 
 def prediction_error_cv(U_hat, Y_test):
@@ -34,3 +35,42 @@ def prediction_error_cv(U_hat, Y_test):
 
     return cosine_distances
 
+
+def compute_dcbc_indiv(U, data, spatialMat):
+    """
+    computing dabc for each subject using individualized parcellations
+    Args:
+        U: np.ndarray (n_subjects x n_vertices)
+            each element is the label for a vertex
+        data: np.ndarray (n_subjects x n_conditions x n_vertices)
+        spatialMat: np.ndarray (n_vertices x n_vertices)
+
+    Returns:
+        output dictionary
+    """
+
+    results = []
+    within_corrs = []
+    between_corrs = []
+    dcbc = []
+    output = {}
+
+    n_subjects, n_conditions, n_vertices = data.shape
+
+    for subjI in np.arange(n_subjects):
+        myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=U[subjI], func=data[subjI].T,
+                                   dist=spatialMat, weighting=True, backend='numpy')
+        results.append(myDCBC)
+        within_corrs.append(myDCBC['corr_within'])
+        between_corrs.append(myDCBC['corr_between'])
+        dcbc.append(myDCBC['DCBC'])
+
+    within_corrs = np.array(within_corrs)
+    between_corrs = np.array(between_corrs)
+
+    output['results'] = results
+    output['within_corrs'] = within_corrs
+    output['between_corrs'] = between_corrs
+    output['dcbc'] = dcbc
+
+    return output
