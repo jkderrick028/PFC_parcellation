@@ -25,9 +25,9 @@ if not os.path.exists(resultsPath):
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
 # appendix = 'whole_cortex'   # or PFC_masked
-# appendix = 'PFC_masked'
+appendix = 'PFC_masked'
 # appendix = 'somatosensory_masked'
-appendix = 'visual_masked'
+# appendix = 'visual_masked'
 # appendix = 'parietal_masked'
 
 PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
@@ -61,6 +61,10 @@ if appendix == 'whole_cortex':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
 if appendix == 'somatosensory_masked':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('somatosensory')
+if appendix == 'visual_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('visual')
+if appendix == 'parietal_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('parietal')
 
 data = data[:, :, included_vtx_inds_LR]
 U_roi = U[included_vtx_inds_LR]
@@ -138,8 +142,8 @@ with open(PKL_output, 'wb') as pf:
 ## Load colormap and labels
 lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
 # modify these color settings when putting on a PFC mask
-if appendix == 'PFC_masked':
-    parcels = get_roi_pacels('PFC')
+if appendix != 'whole_cortex':
+    parcels = get_roi_pacels(appendix.rstrip('_masked'))
     keep_inds = []
     for i in np.arange(len(names)):
         if names[i].split('_')[1] in parcels:
