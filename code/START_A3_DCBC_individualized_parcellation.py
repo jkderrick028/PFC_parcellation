@@ -1,5 +1,7 @@
 import os.path, pickle, subprocess, scipy
 import numpy as np
+from sklearn.metrics.pairwise import cosine_distances
+
 import Functional_Fusion.atlas_map as am
 import nibabel as nib
 import pandas as pd
@@ -8,6 +10,7 @@ from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
 from scipy.stats import ttest_ind
+from evaluations import *
 
 
 """
@@ -85,14 +88,15 @@ with open(PKL_data, 'rb') as pf:
     dataset_obj_individuals = original_data['dataset_obj_individuals']
 
 cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
-
+# fill nans with 0
+X_individuals[np.isnan(X_individuals)] = 0
 # whole cortex
 data = X_individuals[:, :, included_vtx_inds_L]
 
-# fill nans with 0
-data[np.isnan(data)] = 0
-
 n_subjects, n_conditions, n_vertices = data.shape
+
+## prediction error
+cosine_distances = prediction_error_cv(output_indiv['U_indiv'][:, :, included_vtx_inds_LR], X_individuals[:, :, included_vtx_inds_LR])
 
 # Create a DCBC evaluation object of the desired evaluation parameters(left hemisphere)
 results = []
