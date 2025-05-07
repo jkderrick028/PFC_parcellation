@@ -11,9 +11,9 @@ from scipy.stats import ttest_ind
 
 
 """
-This script computes the DCBC for PFC using glasser group atlas. 
+This script computes DCBC using individualized parcellation for PFC. 
 
-modified: 2025.05.03  
+modified: 2025.05.05
 """
 
 
@@ -27,15 +27,15 @@ resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('
 if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
-# load cortical parcellation from label.gii file
-glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
-glasser_R = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
+## loading individualized parcellation
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 
-# extract the first data array as the parcels
-# make sure that the input parcels are of shape (N,)
-gii_file = nib.load(glasser_L)
-# gii_file = nib.load(glasser_R)
-parcels_inds = gii_file.darrays[0].data
+PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A5_bayes_parcellation', dataset_name, 'output_PFC_masked.pkl')
+with open(PKL_individualized_parcellation, 'rb') as pf:
+    output_indiv = pickle.load(pf)
+    U_indiv_label = np.argmax(output_indiv['U_indiv'], axis=1) + 1
+
+U_indiv_label = U_indiv_label[:, included_vtx_inds_L]
 
 dict_parcel_indices = get_glasser_labels()
 
@@ -49,8 +49,18 @@ large_ROI = 'PFC'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
-parcels_ROI = get_roi_pacels(large_ROI)
+MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs']
 
+glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
+glasser_R = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
+
+# extract the first data array as the parcels
+# make sure that the input parcels are of shape (N,)
+gii_file = nib.load(glasser_L)
+# gii_file = nib.load(glasser_R)
+parcels_inds = gii_file.darrays[0].data
+parcels_ROI = get_roi_pacels(large_ROI)
 indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
 
 # get all the vertices that are in the ROI list
@@ -63,13 +73,8 @@ for i, label in enumerate(parcels_inds):
 vertex_label_ROI = np.array(vertex_label_ROI)
 vertex_ind_ROI = np.array(vertex_ind_ROI)
 
-MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
-spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs']
-
 spatialMat = spatialMat[vertex_ind_ROI, :]
 spatialMat = spatialMat[:, vertex_ind_ROI]
-
-included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
 # loading MDTB dataset
 PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
@@ -99,7 +104,7 @@ output = dict()
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
 
 for subjI in np.arange(n_subjects):
-    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=vertex_label_ROI, func=data[subjI].T, dist=spatialMat, weighting=True, backend='numpy')
+    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=U_indiv_label[subjI], func=data[subjI].T, dist=spatialMat, weighting=True, backend='numpy')
     results.append(myDCBC)
     within_corrs.append(myDCBC['corr_within'])
     between_corrs.append(myDCBC['corr_between'])
@@ -127,9 +132,9 @@ ax.spines['top'].set_visible(False)
 ax.spines['right'].set_visible(False)
 plt.legend(['within', 'between'], frameon=False)
 if is_significant:
-    ax.set_title(f'{large_ROI} Glasser group, dcbc significant')
+    ax.set_title(f'{large_ROI} individualized, dcbc significant')
 else:
-    ax.set_title(f'{large_ROI} Glasser group, dcbc not significant')
+    ax.set_title(f'{large_ROI} individualized, dcbc not significant')
 
 JPG_fig = os.path.join(resultsPath, f'DCBC_{large_ROI}.jpg')
 plt.savefig(JPG_fig, dpi=500, format='jpg')

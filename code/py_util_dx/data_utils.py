@@ -6,12 +6,12 @@ import Functional_Fusion.atlas_map as am
 from py_util_dx.py_utils import setProjectPath
 
 
-def get_roi_vtx_from_fs32k(roi):
+def get_roi_vtx_from_fs32k(ROI):
     """
     Get the indices of vertices associated with all the parlces in the roi from fs32k atlas
 
     Args:
-        roi: list of parcel names or a string which has to be in ['PFC', 'visual', 'parietal', 'somatosensory']
+        ROI: list of parcel names or a string which has to be in ['PFC', 'visual', 'parietal', 'somatosensory']
 
     Returns:
 
@@ -22,8 +22,8 @@ def get_roi_vtx_from_fs32k(roi):
     if not os.path.exists(temp_dir):
         os.makedirs(temp_dir)
 
-    if isinstance(roi, str):
-        PKL_output = os.path.join(surface_helpers_dir, f'roi_vtx_fs32k_{roi}.pkl')
+    if isinstance(ROI, str):
+        PKL_output = os.path.join(surface_helpers_dir, f'roi_vtx_fs32k_{ROI}.pkl')
         if os.path.exists(PKL_output):
             with open(PKL_output, 'rb') as pf:
                 output = pickle.load(pf)
@@ -33,9 +33,9 @@ def get_roi_vtx_from_fs32k(roi):
                 excluded_vtx_inds_LR = output['excluded_vtx_inds_LR']
                 return included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR
         else:
-            parcels = get_roi_pacels(roi)
+            parcels = get_roi_pacels(ROI)
     else:
-        parcels = roi
+        parcels = ROI
 
     # load cortical parcellation from label.gii file
     glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
@@ -78,7 +78,7 @@ def get_roi_vtx_from_fs32k(roi):
     included_vtx_inds_R = np.where(label_vec == 2)[0]
     excluded_vtx_inds_LR = np.where(label_vec == 0)[0]
 
-    if isinstance(roi, str):
+    if isinstance(ROI, str):
         output = {}
         output['included_vtx_inds_LR'] = included_vtx_inds_LR
         output['included_vtx_inds_L'] = included_vtx_inds_L
@@ -100,6 +100,9 @@ def get_roi_pacels(roi):
         parcels = ['7AL', '7Am', '7Pm', '7PL', 'MIP', 'VIP', '7PC', 'LIPv', 'AIP', 'LIPd']
     elif roi == 'somatosensory':
         parcels = ['4', '3a', '3b', '1', '2']
+    elif roi == 'whole_cortex':
+        dict_parcel_labels = get_glasser_labels()
+        parcels = list(dict_parcel_labels.keys())
     else:
         print('undefined ROI')
         parcels = []

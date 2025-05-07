@@ -53,37 +53,25 @@ U_shape_orig = U.shape
 
 ## dealing with PFC mask
 if appendix == 'PFC_masked':
-    parcels = get_roi_pacels('PFC')
-    glasser_label_dict = get_glasser_labels()
-    labels_PFC = [glasser_label_dict[k] for k in parcels]
-    # labels_PFC = np.array(sorted(labels_PFC)) - 1
-
-    U_PFC_mask_inds = [i for i in np.arange(len(U)) if U[i] in labels_PFC]
-    U_PFC_mask_inds = np.array(U_PFC_mask_inds)
-    U_masked = U[U_PFC_mask_inds]
-    U = U_masked.copy()
-
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
-    data = data[:, :, included_vtx_inds_LR]
+if appendix == 'whole_cortex':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
+data = data[:, :, included_vtx_inds_LR]
+U_roi = U[included_vtx_inds_LR]
 
 
 ## converting the hard parcellation into a probabilistic one
 # U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
-_, U = np.unique(U, return_inverse=True)
-K = np.unique(U).size
+_, U_roi = np.unique(U_roi, return_inverse=True)
+K = np.unique(U_roi).size
 
 strength = 7.0
-logpi = ar.expand_mn_1d(U, K) * strength 
-
-if appendix == 'whole_cortex':
-    # Set parcel 0 to unassigned
-    logpi = logpi[1:, :] if np.any(np.unique(U) == 0) else logpi
-
-U = torch.softmax(logpi, dim=0)
+logpi = ar.expand_mn_1d(U_roi, K) * strength
+U_roi = torch.softmax(logpi, dim=0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-ar_model = ar.build_arrangement_model(U, prior_type='logpi', atlas=atlas)
+ar_model = ar.build_arrangement_model(U_roi, prior_type='logpi', atlas=atlas)
 
 # fit the emission model to the data
 # K is the number of parcels
@@ -92,7 +80,7 @@ K = ar_model.K
 X= ut.indicator(cond_vec)
 # Build an emission model
 # em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
-em_model = em.MixVMF(K=K,P=U.shape[1], X=X,part_vec=part_vec)
+em_model = em.MixVMF(K=K, P=U_roi.shape[1], X=X, part_vec=part_vec)
 
 # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
 M = fm.FullMultiModel(ar_model, [em_model])
@@ -114,17 +102,18 @@ M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=200, tol=0.01, fit_arrangement=F
 print(f'kappa: {M.emissions[0].kappa}')
 
 ## restoring U to the original shape (containing all vertices in the cortex)
-if appendix == 'PFC_masked':
-    U_restore = np.zeros((U.shape[0], U_shape_orig[0]))
-    U_restore[:, U_PFC_mask_inds] = U
-    U = U_restore.copy()
+if appendix == 'PFC_masked' or appendix == 'whole_cortex':
+    U_restore = np.zeros((U_roi.shape[0], U_shape_orig[0]))
+    U_restore[:, included_vtx_inds_LR] = U_roi
+    U_roi = U_restore.copy()
 
     U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
-    U_indiv_restore[:, :, U_PFC_mask_inds] = U_indiv
+    U_indiv_restore[:, :, included_vtx_inds_LR] = U_indiv
     U_indiv = U_indiv_restore.copy()
 
 # saving U and U_indiv
 output['U'] = U
+output['U_roi'] = U_roi
 output['U_indiv'] = U_indiv
 # output['M'] = M
 output['ll'] = ll
@@ -133,65 +122,85 @@ output['ll'] = ll
 with open(PKL_output, 'wb') as pf:
     pickle.dump(output, pf)
 
-# loading saved U and U_indiv
-with open(PKL_output, 'rb') as pf:
-    output = pickle.load(pf)
+# # loading saved U and U_indiv
+# with open(PKL_output, 'rb') as pf:
+#     output = pickle.load(pf)
+#
+# # U = output['U']
+# U_indiv = output['U_indiv']
+# ll = output['ll']
 
-U = output['U']
-U_indiv = output['U_indiv']
-ll = output['ll']
-
-# Load colormap and labels
+## Load colormap and labels
 lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
+# modify these color settings when putting on a PFC mask
+if appendix == 'PFC_masked':
+    parcels = get_roi_pacels('PFC')
+    keep_inds = []
+    for i in np.arange(len(names)):
+        if names[i].split('_')[1] in parcels:
+            keep_inds.append(i)
+    lid = lid[keep_inds]
+    cmap = cmap[keep_inds]
+    names = list(map(names.__getitem__, keep_inds))
 
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
 def plot_probseg(surf_data, cmap, hemi):
-    label = np.argmax(surf_data, axis=0)+1
+    label = np.argmax(surf_data, axis=0) + 1
+    label[excluded_vtx_inds_LR] = 181
+
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label.reshape(1, -1)))
 
     if hemi == 'L':
         # left cortex
+        keep_inds = np.arange(int(cmap.shape[0]/2))
+        cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
+
         flatmap.plot(label_L.reshape(-1, ),
                      surf=flat_surf_L,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
                      alpha=1,
-                     label_names=names,
+                     label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
                      frame=None,
                      render='matplotlib',
                      cmap=cmap,
                      borders=border_LR,
-                     # cscale=[0,31],
                      overlay_type='label',
                      bordersize=3,
+                     undermap='gray',
+                     underscale=[-1, 0.5]
         )
 
     else:
         # right cortex
+        keep_inds = np.arange(int(cmap.shape[0]/2), cmap.shape[0])
+        cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
+
         flatmap.plot(label_R.reshape(-1, ),
                      surf=flat_surf_R,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
                      alpha=1,
-                     label_names=names,
+                     label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
                      frame=None,
                      render='matplotlib',
                      cmap=cmap,
                      borders=border_LR,
-                     # cscale=[0, 31],
                      overlay_type='label',
                      bordersize=3,
+                     undermap='gray',
+                     underscale=[-1, 0.5]
         )
 
 
 # Make a nifti image of the first subject
-if torch.is_tensor(U):
-    surf_data = U.detach().numpy()
+if torch.is_tensor(U_roi):
+    surf_data = U_roi.detach().numpy()
 else:
-    surf_data = U.copy()
+    surf_data = U_roi.copy()
 
 # plot the group probabilistic atlas
 plt.figure()
