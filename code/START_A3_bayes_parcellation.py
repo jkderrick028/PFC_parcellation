@@ -26,7 +26,9 @@ surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
 # appendix = 'whole_cortex'   # or PFC_masked
 # appendix = 'PFC_masked'
-appendix = 'somatosensory_masked'
+# appendix = 'somatosensory_masked'
+appendix = 'visual_masked'
+# appendix = 'parietal_masked'
 
 PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
