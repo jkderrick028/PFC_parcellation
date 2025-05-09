@@ -23,10 +23,10 @@ projectPath, mainResultsPath = setProjectPath()
 dataset_name = 'MDTB' # or Demand
 
 # defining ROIs
-large_ROI = 'PFC'
+# large_ROI = 'PFC'
 # large_ROI = 'visual'
 # large_ROI = 'somatosensory'
-# large_ROI = 'parietal'
+large_ROI = 'parietal'
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -51,9 +51,9 @@ X_individuals[np.isnan(X_individuals)] = 0
 n_subjects = X_individuals.shape[0]
 
 ## loading individualized parcellation and glasser group parcellation
-included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
-PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A5_bayes_parcellation', dataset_name, 'output_PFC_masked.pkl')
+PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', dataset_name, f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
     U_indiv = output_indiv['U_indiv']
