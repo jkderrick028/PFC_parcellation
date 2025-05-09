@@ -109,14 +109,8 @@ def plot_probseg(nifti, cmap):
                  bordersize=3,
                  undermap='gray',
                  underscale=[-1, 0.5]
-     )
+    )
 
-
-# Make a nifti image of the first subject
-if torch.is_tensor(U):
-    surf_data = U.detach().numpy()
-else:
-    surf_data = U.copy()
 
 # plot the group probabilistic atlas
 plt.figure()
