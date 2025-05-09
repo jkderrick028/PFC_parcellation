@@ -123,8 +123,8 @@ plot_probseg(nifti, cmap)
 
 # plot 3 individual subjects
 for i,s in enumerate([6,9,12]):
-    plt.subplot(1, 4, i+1, title=f'subect {s}')
-    nifti = atlas.data_to_nifti[U_indiv[s].numpy()]
+    plt.subplot(1, 4, i+1, title=f'subject {s}')
+    nifti = atlas.data_to_nifti(U_indiv[s].numpy())
     plot_probseg(nifti, cmap)
 
 
