@@ -8,10 +8,9 @@ import HierarchBayesParcel.full_model as fm
 import HierarchBayesParcel.util as ut
 from py_util_dx.py_utils import setProjectPath
 import os, pickle
-from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
 import torch
-from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
+import SUITPy as suit
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -30,7 +29,7 @@ PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
 
 ## loading MDTB data
-PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1.pkl')
+PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1_MNISymC3.pkl')
 with open(PKL_data, 'rb') as pf:
     original_data = pickle.load(pf)
     data = original_data['X_individuals']
@@ -38,45 +37,16 @@ with open(PKL_data, 'rb') as pf:
     dataset_obj_individuals = original_data['dataset_obj_individuals']
 
 cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
-part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+part_vec = np.ones(len(cond_vec)).astype(int)
 
 ## loading group atlas
 atlas, _ = am.get_atlas('MNISymC3')
 atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
 U = atlas.read_data(atlas_fname)
-U = U.T
-U_shape_orig = U.shape
-
-
-
-## dealing with PFC mask
-if appendix == 'PFC_masked':
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
-if appendix == 'whole_cortex':
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
-if appendix == 'somatosensory_masked':
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('somatosensory')
-if appendix == 'visual_masked':
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('visual')
-if appendix == 'parietal_masked':
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('parietal')
-
-data = data[:, :, included_vtx_inds_LR]
-U_roi = U[included_vtx_inds_LR]
-
-
-## converting the hard parcellation into a probabilistic one
-# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
-_, U_roi = np.unique(U_roi, return_inverse=True)
-K = np.unique(U_roi).size
-
-strength = 7.0
-logpi = ar.expand_mn_1d(U_roi, K) * strength
-U_roi = torch.softmax(logpi, dim=0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
 # ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
-ar_model = ar.build_arrangement_model(U_roi, prior_type='logpi', atlas=atlas)
+ar_model = ar.build_arrangement_model(U, prior_type='prob', atlas=atlas)
 
 # fit the emission model to the data
 # K is the number of parcels
@@ -85,7 +55,7 @@ K = ar_model.K
 X= ut.indicator(cond_vec)
 # Build an emission model
 # em_model = em.MixVMF(K=K,P=atlas.P, X=X,part_vec=part_vec)
-em_model = em.MixVMF(K=K, P=U_roi.shape[1], X=X, part_vec=part_vec)
+em_model = em.MixVMF(K=K, P=U.shape[1], X=X, part_vec=part_vec)
 
 # Build the full model: The emission models are passed as a list, as usually we have multiple data sets
 M = fm.FullMultiModel(ar_model, [em_model])
@@ -100,24 +70,11 @@ M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=1000, tol=0.01, fit_arrangement=
                                            init_emission=True, n_inits=50, first_iter=30,
                                            verbose=False)
 
-# M.initialize([data])
-# U_indiv, _ = M.Estep()
-
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
 
-## restoring U to the original shape (containing all vertices in the cortex)
-U_restore = np.zeros((U_roi.shape[0], U_shape_orig[0]))
-U_restore[:, included_vtx_inds_LR] = U_roi
-U_roi = U_restore.copy()
-
-U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
-U_indiv_restore[:, :, included_vtx_inds_LR] = U_indiv
-U_indiv = U_indiv_restore.copy()
-
 # saving U and U_indiv
 output['U'] = U
-output['U_roi'] = U_roi
 output['U_indiv'] = U_indiv
 # output['M'] = M
 output['ll'] = ll
@@ -134,99 +91,47 @@ with open(PKL_output, 'wb') as pf:
 # U_indiv = output['U_indiv']
 # ll = output['ll']
 
-## Load colormap and labels
-lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
-# modify these color settings when putting on a PFC mask
-if appendix != 'whole_cortex':
-    parcels = get_roi_pacels(appendix.rstrip('_masked'))
-    keep_inds = []
-    for i in np.arange(len(names)):
-        if names[i].split('_')[1] in parcels:
-            keep_inds.append(i)
-    lid = lid[keep_inds]
-    cmap = cmap[keep_inds]
-    names = list(map(names.__getitem__, keep_inds))
+# Load colormap and labels
+lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
 
-flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
-flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
-border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
-def plot_probseg(surf_data, cmap, hemi):
-    label = np.argmax(surf_data, axis=0) + 1
-    label[excluded_vtx_inds_LR] = 181
-
-    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label.reshape(1, -1)))
-
-    if hemi == 'L':
-        # left cortex
-        keep_inds = np.arange(int(cmap.shape[0]/2))
-        cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
-
-        flatmap.plot(label_L.reshape(-1, ),
-                     surf=flat_surf_L,
-                     underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
-                     alpha=1,
-                     label_names=list(map(names.__getitem__, keep_inds)),
-                     new_figure=False,
-                     frame=None,
-                     render='matplotlib',
-                     cmap=cmap,
-                     borders=border_LR,
-                     overlay_type='label',
-                     bordersize=3,
-                     undermap='gray',
-                     underscale=[-1, 0.5]
-        )
-
-    else:
-        # right cortex
-        keep_inds = np.arange(int(cmap.shape[0]/2), cmap.shape[0])
-        cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
-
-        flatmap.plot(label_R.reshape(-1, ),
-                     surf=flat_surf_R,
-                     underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
-                     alpha=1,
-                     label_names=list(map(names.__getitem__, keep_inds)),
-                     new_figure=False,
-                     frame=None,
-                     render='matplotlib',
-                     cmap=cmap,
-                     borders=border_LR,
-                     overlay_type='label',
-                     bordersize=3,
-                     undermap='gray',
-                     underscale=[-1, 0.5]
-        )
+def plot_probseg(nifti, cmap):
+    surf_data = suit.flatmap.vol_to_surf(nifti, stats='nanmean', space='MNISymC')
+    label = np.argmax(surf_data, axis=1) + 1
+    flatmap.plot(label.reshape(-1, ),
+                 alpha=1,
+                 label_names=names,
+                 new_figure=False,
+                 frame=None,
+                 render='matplotlib',
+                 cmap=cmap,
+                 overlay_type='label',
+                 bordersize=3,
+                 undermap='gray',
+                 underscale=[-1, 0.5]
+     )
 
 
 # Make a nifti image of the first subject
-if torch.is_tensor(U_roi):
-    surf_data = U_roi.detach().numpy()
+if torch.is_tensor(U):
+    surf_data = U.detach().numpy()
 else:
-    surf_data = U_roi.copy()
+    surf_data = U.copy()
 
 # plot the group probabilistic atlas
 plt.figure()
-plt.subplot(1, 2, 1)
-plot_probseg(surf_data, cmap, 'L')
-plt.subplot(1, 2, 2)
-plot_probseg(surf_data, cmap, 'R')
-plt.suptitle('group')
+plt.subplot(1, 4, 1, title='group')
+
+# Make a nifti image of the first subject
+nifti = atlas.data_to_nifti(U)
+plot_probseg(nifti, cmap)
+
 
 # plot 3 individual subjects
 for i,s in enumerate([6,9,12]):
-    if torch.is_tensor(U_indiv):
-        surf_data = U_indiv[s].detach().numpy()
-    else:
-        surf_data = U_indiv[s]
-
-    plt.figure()
-    plt.subplot(1, 2, 1)
-    plot_probseg(surf_data, cmap, 'L')
-    plt.subplot(1, 2, 2)
-    plot_probseg(surf_data, cmap, 'R')
-    plt.suptitle(f'subject {s}')
+    plt.subplot(1, 4, i+1, title=f'subect {s}')
+    nifti = atlas.data_to_nifti[U_indiv[s].numpy()]
+    plot_probseg(nifti, cmap)
 
 
 JPG_fig = os.path.join(resultsPath, f'example_parcellations_{appendix}.jpg')
