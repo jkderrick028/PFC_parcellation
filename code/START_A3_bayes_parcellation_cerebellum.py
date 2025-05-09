@@ -24,11 +24,7 @@ if not os.path.exists(resultsPath):
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
-# appendix = 'whole_cortex'   # or PFC_masked
-appendix = 'PFC_masked'
-# appendix = 'somatosensory_masked'
-# appendix = 'visual_masked'
-# appendix = 'parietal_masked'
+appendix = 'cerebellum'
 
 PKL_output = os.path.join(resultsPath, f'output_{appendix}.pkl')
 output = {}
@@ -45,20 +41,25 @@ cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
 part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
 
 ## loading group atlas
-atlas_str = 'fs32k'
-atlas, ainf = am.get_atlas(atlas_str)
-
-# Sample the probabilistic atlas at the specific atlas grayordinates
-atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
+atlas, _ = am.get_atlas('MNISymC3')
+atlas_fname = os.path.join(surface_helpers_dir, 'atl-NettekovenSym32_space-MNI152NLin2009cSymC_probseg.nii.gz')
 U = atlas.read_data(atlas_fname)
-
+U = U.T
 U_shape_orig = U.shape
 
+
+
 ## dealing with PFC mask
+if appendix == 'PFC_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
 if appendix == 'whole_cortex':
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
-else:
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(appendix.rstrip('_masked'))
+if appendix == 'somatosensory_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('somatosensory')
+if appendix == 'visual_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('visual')
+if appendix == 'parietal_masked':
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('parietal')
 
 data = data[:, :, included_vtx_inds_LR]
 U_roi = U[included_vtx_inds_LR]
@@ -98,6 +99,9 @@ M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=1000, tol=0.01, fit_arrangement=
                                            fit_emission=True, init_arrangement=True,
                                            init_emission=True, n_inits=50, first_iter=30,
                                            verbose=False)
+
+# M.initialize([data])
+# U_indiv, _ = M.Estep()
 
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
