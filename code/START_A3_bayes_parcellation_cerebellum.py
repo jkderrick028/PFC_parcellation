@@ -92,7 +92,7 @@ with open(PKL_output, 'wb') as pf:
 # ll = output['ll']
 
 # Load colormap and labels
-lid,cmap,names = nt.read_lut('atl-NettekovenSym32.lut')
+lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-NettekovenSym32.lut'))
 
 
 def plot_probseg(nifti, cmap):
