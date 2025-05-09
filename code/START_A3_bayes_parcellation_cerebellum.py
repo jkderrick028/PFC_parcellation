@@ -64,11 +64,11 @@ M = fm.FullMultiModel(ar_model, [em_model])
 M.initialize([data])
 
 # Now we can run the EM algorithm
-# M, _, _, _ = M.fit_em(iter=200, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
-M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=1000, tol=0.01, fit_arrangement=False,
-                                           fit_emission=True, init_arrangement=True,
-                                           init_emission=True, n_inits=50, first_iter=30,
-                                           verbose=False)
+M, ll, _, U_indiv = M.fit_em(iter=1000, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
+# M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=1000, tol=0.01, fit_arrangement=False,
+#                                            fit_emission=True, init_arrangement=True,
+#                                            init_emission=True, n_inits=50, first_iter=30,
+#                                            verbose=False)
 
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
