@@ -42,7 +42,8 @@ with open(PKL_data, 'rb') as pf:
     dataset_obj_individuals = original_data['dataset_obj_individuals']
 
 cond_vec = np.array(list(info_individuals[dataset_obj_individuals.cond_ind]))
-part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+# part_vec = np.array(list(info_individuals[dataset_obj_individuals.part_ind]))
+part_vec = np.ones(len(cond_vec)).astype(int)
 
 ## loading group atlas
 atlas_str = 'fs32k'
