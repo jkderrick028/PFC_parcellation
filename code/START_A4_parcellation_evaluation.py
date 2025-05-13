@@ -23,10 +23,10 @@ projectPath, mainResultsPath = setProjectPath()
 dataset_name = 'MDTB' # or Demand
 
 # defining ROIs
-large_ROI = 'PFC'
+# large_ROI = 'PFC'
 # large_ROI = 'visual'
 # large_ROI = 'somatosensory'
-# large_ROI = 'parietal'
+large_ROI = 'parietal'
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
