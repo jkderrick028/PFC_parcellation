@@ -28,15 +28,15 @@ output['PFC'] = {}
 output['whole_cortex'] = {}
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 
-PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All.pkl')
+PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
 with open(PKL_data, 'rb') as pf:
     original_data = pickle.load(pf)
     X_individuals = original_data['X_individuals']
     info_individuals = original_data['info_individuals']
     dataset_obj_individuals = original_data['dataset_obj_individuals']
 
-part_vec = list(info_individuals['sess'])
-part_vec = [int(x[-1]) for x in part_vec]
+part_vec = list(info_individuals['half'])
+# part_vec = [int(x[-1]) for x in part_vec]
 cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
 ## whole cortex
@@ -91,8 +91,8 @@ underlay_L = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gi
 underlay_R = os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
-normalization_method = 'gse'    # gse or gs
-# normalization_method = 'gs'
+# normalization_method = 'gse'    # gse or gs
+normalization_method = 'gs'
 
 if normalization_method == 'gse':
     voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'], np.tile(np.sum(output['PFC']['voxel_wise'], axis=1).reshape(-1, 1), (1, 3)))
