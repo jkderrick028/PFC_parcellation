@@ -132,8 +132,8 @@ for parI in np.arange(n_parcels-1):
         plt.savefig(JPG_fig, dpi=500, format='jpg')
 
         fig, ax = plt.subplots(1, 1)
-        ax.bar(np.arange(0, 35, 5), dcbc[0]['num_within'])
-        ax.bar(np.arange(0, 35, 5), dcbc[0]['num_between'])
+        ax.bar(np.arange(0, 35, 5), results[0]['num_within'])
+        ax.bar(np.arange(0, 35, 5)+1, results[0]['num_between'])
         ax.set_xlabel('distance (mm)')
         ax.set_ylabel('vertex pair counts')
         ax.spines['top'].set_visible(False)
@@ -149,6 +149,8 @@ for parI in np.arange(n_parcels-1):
         output[f'{parcel_pair[0]}_{parcel_pair[1]}']['between_corrs'] = between_corrs
         output[f'{parcel_pair[0]}_{parcel_pair[1]}']['ttest_result'] = ttest_result
         output[f'{parcel_pair[0]}_{parcel_pair[1]}']['DCBC'] = dcbc
+
+        plt.close()
 
 
 with open(PKL_output, 'wb') as pk:
