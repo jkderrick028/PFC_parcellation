@@ -4,15 +4,15 @@ import Functional_Fusion.atlas_map as am
 import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_vtx_from_fs32k
+from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
 from scipy.stats import ttest_ind
 
 
 """
-This script computes the DCBC for each pair of parcels in PFC on individualized atlas. 
+This script computes the DCBC for each pair of parcels in PFC on glasser group atlas. 
 
-modified: 2025.05.23
+modified: 2025.05.20
 """
 
 
@@ -34,6 +34,8 @@ gii_file = nib.load(glasser_L)
 # gii_file = nib.load(glasser_R)
 parcels_inds = gii_file.darrays[0].data
 
+dict_parcel_indices = get_glasser_labels()
+
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
@@ -43,12 +45,6 @@ large_ROI = 'PFC'
 # large_ROI = 'visual'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
-
-PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', dataset_name, f'output_{large_ROI}_masked.pkl')
-with open(PKL_individualized_parcellation, 'rb') as pf:
-    output_indiv = pickle.load(pf)
-    U_indiv = output_indiv['Uhat_data']         # data only parcellation
-    U_indiv_label = np.argmax(U_indiv, axis=1) + 1
 
 output = dict()
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
@@ -67,13 +63,13 @@ with open(PKL_data, 'rb') as pf:
 cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 X_individuals[np.isnan(X_individuals)] = 0
 
-parcels_ROI = np.unique(U_indiv_label)
+parcels_ROI = get_roi_pacels(large_ROI)
 n_parcels = len(parcels_ROI)
 
 for parI in np.arange(n_parcels-1):
     for parJ in np.arange(parI+1, n_parcels):
         parcel_pair = [parcels_ROI[parI], parcels_ROI[parJ]]
-        indices_ROI = parcel_pair.copy()
+        indices_ROI = [dict_parcel_indices[k] for k in parcel_pair]
 
         output[f'{parcel_pair[0]}_{parcel_pair[1]}'] = {}
 

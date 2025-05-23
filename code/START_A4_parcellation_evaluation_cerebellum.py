@@ -47,7 +47,7 @@ n_subjects = data.shape[0]
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation_cerebellum', dataset_name, f'output_{appendix}.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
-    U_indiv = output_indiv['U_indiv'].numpy()
+    U_indiv = output_indiv['Uhat_data']
     U_indiv_label = np.argmax(U_indiv, axis=1) + 1
     U_group_label = np.argmax(output_indiv['U'], axis=0) + 1
 
