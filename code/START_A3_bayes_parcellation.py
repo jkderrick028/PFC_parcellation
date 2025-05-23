@@ -119,7 +119,7 @@ output['U_indiv'] = U_indiv
 output['Uhat_data'] = Uhat_data
 # output['M'] = M
 output['ll'] = ll
-output['V'] = M.emissions[0].V
+output['V'] = M.emissions[0].V.numpy()
 # output['theta'] = theta
 
 with open(PKL_output, 'wb') as pf:
