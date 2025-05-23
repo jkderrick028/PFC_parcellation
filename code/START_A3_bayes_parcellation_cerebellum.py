@@ -65,10 +65,10 @@ M.initialize([data])
 
 # Now we can run the EM algorithm
 M, ll, _, U_indiv = M.fit_em(iter=1000, tol=0.01, fit_arrangement=False,fit_emission=True,first_evidence=False)
-# M, ll, theta, U_indiv, _ = M.fit_em_ninits(iter=1000, tol=0.01, fit_arrangement=False,
-#                                            fit_emission=True, init_arrangement=False,
-#                                            init_emission=True, n_inits=50, first_iter=30,
-#                                            verbose=False)
+
+# get the data only parcellation
+emloglik  = M.emissions[0].Estep()
+Uhat_data = torch.softmax(emloglik, dim=1)
 
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
@@ -76,6 +76,7 @@ print(f'kappa: {M.emissions[0].kappa}')
 # saving U and U_indiv
 output['U'] = U
 output['U_indiv'] = U_indiv
+output['Uhat_data'] = Uhat_data
 # output['M'] = M
 output['ll'] = ll
 # output['theta'] = theta
