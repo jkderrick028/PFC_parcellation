@@ -84,7 +84,8 @@ plt.xticks([1, 2], labels=['group', 'indiv'])
 plt.xlabel('atlas type')
 plt.ylabel('cosine dist')
 plt.title('prediction error using glasser and indiv atlas')
-
+JPG_fig = os.path.join(resultsPath, f'prediction_error_{large_ROI}.jpg')
+plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 ## DCBC using left hemisphere only
 # Get the atlas
@@ -194,6 +195,8 @@ plt.xticks([1, 2], labels=['group', 'indiv'])
 plt.xlabel('atlas type')
 plt.ylabel('dcbc')
 plt.title('DCBC using glasser and indiv atlas')
+JPG_fig = os.path.join(resultsPath, f'DCBC_scatter_{large_ROI}.jpg')
+plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 output['output_dcbc_group'] = output_dcbc_group
 output['output_dcbc_indiv'] = output_dcbc_indiv
