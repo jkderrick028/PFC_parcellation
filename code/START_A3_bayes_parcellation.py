@@ -18,7 +18,9 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), dataset_name)
+strength = 1.0
+
+resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
@@ -70,7 +72,6 @@ U_roi = U[included_vtx_inds_LR]
 _, U_roi = np.unique(U_roi, return_inverse=True)
 K = np.unique(U_roi).size
 
-strength = 7.0
 logpi = ar.expand_mn_1d(U_roi, K) * strength
 U_roi = torch.softmax(logpi, dim=0)
 

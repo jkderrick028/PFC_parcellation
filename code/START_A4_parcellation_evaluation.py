@@ -22,6 +22,8 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
+strength = 1.0
+
 # defining ROIs
 large_ROI = 'PFC'
 # large_ROI = 'visual'
@@ -30,7 +32,7 @@ large_ROI = 'PFC'
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
-resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), dataset_name)
+resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
@@ -64,7 +66,6 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
 _, U_group = np.unique(U_group_label, return_inverse=True)
 K = np.unique(U_group).size
 
-strength = 7.0
 logpi = ar.expand_mn_1d(U_group, K) * strength
 logpi = logpi[1:, :]
 U_group = torch.softmax(logpi, dim=0).detach().numpy()
