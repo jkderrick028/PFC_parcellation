@@ -98,7 +98,7 @@ M, ll, _, U_indiv = M.fit_em(iter=1000, tol=0.01, fit_arrangement=False,fit_emis
 
 # get the data only parcellation
 emloglik  = M.emissions[0].Estep()
-Uhat_data = torch.softmax(emloglik, dim=1)
+Uhat_data = torch.softmax(emloglik, dim=1).numpy()
 
 # printing kappa
 print(f'kappa: {M.emissions[0].kappa}')
@@ -111,6 +111,10 @@ U_roi = U_restore.copy()
 U_indiv_restore = np.zeros((U_indiv.shape[0], U_indiv.shape[1], U_shape_orig[0]))
 U_indiv_restore[:, :, included_vtx_inds_LR] = U_indiv
 U_indiv = U_indiv_restore.copy()
+
+Uhat_data_restore = np.zeros((Uhat_data.shape[0], Uhat_data.shape[1], U_shape_orig[0]))
+Uhat_data_restore[:, :, included_vtx_inds_LR] = Uhat_data
+Uhat_data = Uhat_data_restore.copy()
 
 # saving U and U_indiv
 output['U'] = U

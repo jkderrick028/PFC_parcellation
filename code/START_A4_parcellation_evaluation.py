@@ -23,10 +23,10 @@ projectPath, mainResultsPath = setProjectPath()
 dataset_name = 'MDTB' # or Demand
 
 # defining ROIs
-# large_ROI = 'PFC'
+large_ROI = 'PFC'
 # large_ROI = 'visual'
 # large_ROI = 'somatosensory'
-large_ROI = 'parietal'
+# large_ROI = 'parietal'
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -56,7 +56,7 @@ included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_ind
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', dataset_name, f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
-    U_indiv = output_indiv['Uhat_data']         # data only parcellation
+    U_indiv = output_indiv['Uhat_data'].numpy()         # data only parcellation
     U_indiv_label = np.argmax(U_indiv, axis=1) + 1
     U_group_label = output_indiv['U']
 
