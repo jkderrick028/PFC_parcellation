@@ -18,7 +18,7 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 1.0
+strength = 0.01
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):

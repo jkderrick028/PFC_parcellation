@@ -22,7 +22,7 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 1.0
+strength = 0.01
 
 # defining ROIs
 large_ROI = 'PFC'
@@ -55,7 +55,7 @@ n_subjects = X_individuals.shape[0]
 ## loading individualized parcellation and glasser group parcellation
 included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
-PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', dataset_name, f'output_{large_ROI}_masked.pkl')
+PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
@@ -94,7 +94,7 @@ atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
 MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
-spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs']
+spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
 glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
 glasser_R = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
