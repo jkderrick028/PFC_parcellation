@@ -101,6 +101,8 @@ for parI in np.arange(n_parcels-1):
         within_corrs_across_subjects = []
         between_corrs_across_subjects = []
         results = []
+        nums_within = []        # counting the number of vertex pairs within a parcel
+        nums_between = []       # counting the number of vertex pairs between parcels
         for subjI in np.arange(n_subjects):
             # get all the vertices that are in the ROI list
             vertex_label_ROI, vertex_ind_ROI = [], []
@@ -125,13 +127,15 @@ for parI in np.arange(n_parcels-1):
             within_corrs_across_subjects.append(myDCBC['corr_within'])
             between_corrs_across_subjects.append(myDCBC['corr_between'])
             results.append(myDCBC)
+            nums_within.append(myDCBC['num_within'])
+            nums_between.append(myDCBC['num_between'])
 
         within_corrs = np.array(within_corrs_across_subjects)
         between_corrs = np.array(between_corrs_across_subjects)
-        within_corrs_mean = np.mean(within_corrs, axis=0)
-        within_corrs_ste = np.std(within_corrs, axis=0) / np.sqrt(n_subjects)
-        between_corrs_mean = np.mean(between_corrs, axis=0)
-        between_corrs_ste = np.std(between_corrs, axis=0) / np.sqrt(n_subjects)
+        within_corrs_mean = np.nanmean(within_corrs, axis=0)
+        within_corrs_ste = np.nanstd(within_corrs, axis=0) / np.sqrt(n_subjects)
+        between_corrs_mean = np.nanmean(between_corrs, axis=0)
+        between_corrs_ste = np.nanstd(between_corrs, axis=0) / np.sqrt(n_subjects)
 
         ## testing weather dcbc is significantly higher than 0
         dcbc = np.array(dcbc_across_subjects)
@@ -153,8 +157,11 @@ for parI in np.arange(n_parcels-1):
         plt.savefig(JPG_fig, dpi=500, format='jpg')
 
         fig, ax = plt.subplots(1, 1)
-        ax.bar(np.arange(0, 35, 5), results[0]['num_within'])
-        ax.bar(np.arange(0, 35, 5)+1, results[0]['num_between'])
+        # ax.bar(np.arange(0, 35, 5), results[0]['num_within'])
+        # ax.bar(np.arange(0, 35, 5)+1, results[0]['num_between'])
+        ax.bar(np.arange(0, 35, 5), np.array(nums_within).mean(axis=0))
+        ax.bar(np.arange(0, 35, 5) + 1, np.array(nums_between).mean(axis=0))
+
         ax.set_xlabel('distance (mm)')
         ax.set_ylabel('vertex pair counts')
         ax.spines['top'].set_visible(False)
@@ -165,10 +172,10 @@ for parI in np.arange(n_parcels-1):
         JPG_fig = os.path.join(resultsPath, f'{indices_ROI[0]}_{indices_ROI[1]}_counts.jpg')
         plt.savefig(JPG_fig, dpi=500, format='jpg')
 
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['dcbc_results'] = results
+        # output[f'{indices_ROI[0]}_{indices_ROI[1]}']['dcbc_results'] = results
         output[f'{indices_ROI[0]}_{indices_ROI[1]}']['within_corrs'] = within_corrs
         output[f'{indices_ROI[0]}_{indices_ROI[1]}']['between_corrs'] = between_corrs
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['ttest_result'] = ttest_result
+        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['pvalue'] = ttest_result.pvalue
         output[f'{indices_ROI[0]}_{indices_ROI[1]}']['DCBC'] = dcbc
 
         plt.close('all')
