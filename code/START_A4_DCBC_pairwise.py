@@ -27,7 +27,7 @@ large_ROI = 'PFC'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
-bin_width = 1 # mm
+bin_width = 2 # mm
 
 # Get the atlas
 atlas_str = 'fs32k'
