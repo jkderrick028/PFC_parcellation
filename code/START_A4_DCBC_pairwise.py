@@ -27,6 +27,8 @@ large_ROI = 'PFC'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
+bin_width = 1 # mm
+
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
@@ -105,7 +107,7 @@ for parI in np.arange(n_parcels-1):
             select_inds = [x for x in np.arange(len(parcels_inds_indiv[subjI])) if parcels_inds_indiv[subjI][x] in indices_ROI]
             data = X_individuals[subjI, :, select_inds]
 
-            myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=vertex_label_ROI, func=data,
+            myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI, func=data,
                                        dist=spaMat, weighting=True, backend='numpy')
             dcbc_across_subjects.append(myDCBC['DCBC'])
             within_corrs_across_subjects.append(myDCBC['corr_within'])
@@ -128,8 +130,8 @@ for parI in np.arange(n_parcels-1):
         is_significant = ttest_result.pvalue < significance_level
 
         fig, ax = plt.subplots(1, 1)
-        ax.errorbar(np.arange(0, 35, step=5), within_corrs_mean, yerr=within_corrs_ste)
-        ax.errorbar(np.arange(0, 35, step=5), between_corrs_mean, yerr=between_corrs_ste)
+        ax.errorbar(np.arange(0, 35, step=bin_width), within_corrs_mean, yerr=within_corrs_ste)
+        ax.errorbar(np.arange(0, 35, step=bin_width), between_corrs_mean, yerr=between_corrs_ste)
         ax.set_xlabel('distance (mm)')
         ax.set_ylabel('vertex-to-vertex correlation')
         ax.spines['top'].set_visible(False)
@@ -143,8 +145,8 @@ for parI in np.arange(n_parcels-1):
         fig, ax = plt.subplots(1, 1)
         # ax.bar(np.arange(0, 35, 5), results[0]['num_within'])
         # ax.bar(np.arange(0, 35, 5)+1, results[0]['num_between'])
-        ax.bar(np.arange(0, 35, 5), np.array(nums_within).mean(axis=0))
-        ax.bar(np.arange(0, 35, 5) + 1, np.array(nums_between).mean(axis=0))
+        ax.bar(np.arange(0, 35, bin_width), np.array(nums_within).mean(axis=0))
+        ax.bar(np.arange(0, 35, bin_width) + 0.5, np.array(nums_between).mean(axis=0))
 
         ax.set_xlabel('distance (mm)')
         ax.set_ylabel('vertex pair counts')
