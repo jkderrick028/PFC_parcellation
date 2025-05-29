@@ -1,7 +1,17 @@
 import numpy as np
-import pickle, os
 import matplotlib.pyplot as plt
+import nitools as nt
+import Functional_Fusion.atlas_map as am
+import HierarchBayesParcel.arrangements as ar
+import HierarchBayesParcel.emissions as em
+import HierarchBayesParcel.full_model as fm
+import HierarchBayesParcel.util as ut
 from py_util_dx.py_utils import setProjectPath
+import os, pickle
+from nitools.cifti import surf_from_cifti
+import SUITPy.flatmap as flatmap
+import torch
+from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -48,15 +58,9 @@ JPG_fig = os.path.join(resultsPath, f'dcbc_across_strengths_{large_ROI}.jpg')
 plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 
-## check the power of V
-strength = 1.0
 
-resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
-if not os.path.exists(resultsPath):
-    os.makedirs(resultsPath)
-
-output = dict()
-PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
+## plotting the spread / concentration of an individualized parcel
+strength = 7.0
 
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
@@ -67,6 +71,80 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
     V = output_indiv['V'].T             # n_parcels x n_conditions
 
 n_subjects, n_parcels, P = U_indiv.shape
+
+surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
+flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
+flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
+border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
+
+atlas_str = 'fs32k'
+atlas, ainf = am.get_atlas(atlas_str)
+
+def plot_probseg(surf_data, hemi):
+    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(surf_data.reshape(1, -1)))
+
+    if hemi == 'L':
+        # left cortex
+        flatmap.plot(label_L.reshape(-1, ),
+                     surf=flat_surf_L,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     new_figure=False,
+                     frame=None,
+                     cmap='bwr',
+                     borders=border_LR,
+                     bordersize=1,
+                     cscale=[-1, 1]
+        )
+
+    else:
+        # right cortex
+        flatmap.plot(label_R.reshape(-1, ),
+                     surf=flat_surf_R,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     new_figure=False,
+                     frame=None,
+                     cmap='bwr',
+                     borders=border_LR,
+                     bordersize=1,
+                     cscale=[-1, 1]
+        )
+
+
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
+
+subjIs = [0]
+parcelIs = [3, 4, 5]
+
+for subjI in np.arange(len(subjIs)):
+    plt.figure()
+    for parI in np.arange(len(parcelIs)):
+        surf_data = U_indiv[subjI, parcelIs[parI]]
+
+        plt.subplot(len(parcelIs), 2, 1 + 2 * parI)
+        plot_probseg(surf_data, 'L')
+        plt.title(f'parcel {parcelIs[parI]} L')
+
+        plt.subplot(len(parcelIs), 2, 2 + 2 * parI)
+        plot_probseg(surf_data, 'R')
+        plt.title(f'parcel {parcelIs[parI]} R')
+
+    plt.suptitle(f'subject {subjIs[subjI]}')
+    JPG_fig = os.path.join(resultsPath, f'parcel_spread_subj_{subjIs[subjI]}.jpg')
+    plt.savefig(JPG_fig, dpi=500, format='jpg')
+
+
+
+## check the power of V
+strength = 1.0
+
+resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
+if not os.path.exists(resultsPath):
+    os.makedirs(resultsPath)
+
+output = dict()
+PKL_output = os.path.join(resultsPath, f'{dataset_name}_{large_ROI}_output.pkl')
 
 # count the number of parcels for each individual
 n_parcels_per_indiv = [len(np.unique(x)) for x in U_indiv_label]
