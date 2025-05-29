@@ -22,7 +22,7 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 0.01
+strength = 7.0
 
 # defining ROIs
 large_ROI = 'PFC'
@@ -60,6 +60,7 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
     U_indiv_label = np.argmax(U_indiv, axis=1) + 1
+    U_indiv_label[:, excluded_vtx_inds_LR] = 0
     U_group_label = output_indiv['U']
 
 # since the U_group_label is 1d, we need to convert it to a parcel x vertex soft probablistic atlas

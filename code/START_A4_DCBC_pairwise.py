@@ -1,12 +1,12 @@
 import os.path, pickle, scipy
 import numpy as np
 import Functional_Fusion.atlas_map as am
-import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
+from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
 from scipy.stats import ttest_ind
+from nitools.cifti import surf_from_cifti
 
 
 """
@@ -27,6 +27,10 @@ large_ROI = 'PFC'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
+# Get the atlas
+atlas_str = 'fs32k'
+atlas, ainf = am.get_atlas(atlas_str)
+
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
@@ -41,39 +45,19 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
     U_indiv_label = np.argmax(U_indiv, axis=1) + 1
 
-
-## convert the original glasser parcellation label array into individualized label array. 0 for vertices outside of ROI
-# load cortical parcellation from label.gii file
-glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
-glasser_R = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
-
-gii_file = nib.load(glasser_L)
-# gii_file = nib.load(glasser_R)
-parcels_inds = gii_file.darrays[0].data
-
-dict_parcel_indices = get_glasser_labels()
-
 included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
+U_indiv_label[:, excluded_vtx_inds_LR] = 0
 
 parcels_ROI = get_roi_pacels(large_ROI)
 n_parcels = len(parcels_ROI)
 
-indices_ROI = [dict_parcel_indices[p] for p in parcels_ROI]
-
-# get all the vertices that are in the ROI list
-vertex_label_ROI, vertex_ind_ROI = [], []
-for i, label in enumerate(parcels_inds):
-    if label in indices_ROI:
-        vertex_label_ROI.append(label)
-        vertex_ind_ROI.append(i)
-
 n_subjects = U_indiv_label.shape[0]
-parcels_inds_indiv = np.zeros((n_subjects, len(parcels_inds)))
-parcels_inds_indiv[:, vertex_ind_ROI] = U_indiv_label[:, included_vtx_inds_L]
+parcels_inds_indiv = []
+for subjI in np.arange(n_subjects):
+    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(U_indiv_label[subjI].reshape(1, -1)))
+    parcels_inds_indiv.append(label_L.squeeze())
 
-# Get the atlas
-atlas_str = 'fs32k'
-atlas, ainf = am.get_atlas(atlas_str)
+parcels_inds_indiv = np.array(parcels_inds_indiv)
 
 output = dict()
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_{strength}_{large_ROI}_output.pkl')

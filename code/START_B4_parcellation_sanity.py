@@ -1,16 +1,10 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import nitools as nt
 import Functional_Fusion.atlas_map as am
-import HierarchBayesParcel.arrangements as ar
-import HierarchBayesParcel.emissions as em
-import HierarchBayesParcel.full_model as fm
-import HierarchBayesParcel.util as ut
 from py_util_dx.py_utils import setProjectPath
 import os, pickle
 from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
-import torch
 from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 
 
@@ -26,6 +20,8 @@ large_ROI = 'PFC'
 
 ## plot DCBC as a function of strengths
 strengths = [0.01, 0.1, 0.5, 1.0, 7.0]
+
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}')
 if not os.path.exists(resultsPath):
@@ -67,6 +63,7 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
     U_indiv = output_indiv['Uhat_data']
     U_indiv_label = np.argmax(U_indiv, axis=1) + 1
+    U_indiv_label[:, excluded_vtx_inds_LR] = 0
     U_group_label = output_indiv['U']
     V = output_indiv['V'].T             # n_parcels x n_conditions
 
@@ -111,8 +108,6 @@ def plot_probseg(surf_data, hemi):
                      cscale=[-1, 1]
         )
 
-
-included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
 subjIs = [0]
 parcelIs = [3, 4, 5]
