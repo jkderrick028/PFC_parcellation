@@ -132,3 +132,41 @@ def get_glasser_labels():
     dict_parcel_indices = {all_parcels[i]: all_indices[i] for i in np.arange(len(all_parcels))}
 
     return dict_parcel_indices
+
+
+def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_inds_LR):
+    """
+    This function converts a probabilistic atlas to a hard parcellation, where each vertex is assigned a label, using the absolute label corresponding to the glasser parcellation
+
+    Args:
+        U:                  np.ndarray (n_parcels x 59518 or n_subjects x n_parcels x 59518)
+                the probabilistic parcellation
+        labels_in_glasser:  np.ndarray
+                original labels in the glasser parcellation for the parcels of interest
+        excluded_vtx_inds_LR: np.ndarray
+                specifying the indices of vertices that fall out of the ROI
+    Returns:
+        U_labels:           np.ndarray (n_subjects x 59518)
+    """
+
+    if U.ndim == 2:
+        n_parcels, n_vertices = U.shape
+        n_subjects = 1
+        U = np.reshape(U, (1, n_parcels, n_vertices))
+    elif U.ndim == 3:
+        n_subjects, n_parcels, n_vertices = U.shape
+    else:
+        raise(NameError('U can only be 2d or 3d!'))
+
+    relative_labels = np.argmax(U, axis=1)
+    relative_labels[:, excluded_vtx_inds_LR] = 181
+    U_labels = 181 * np.ones((n_subjects, n_vertices))
+
+    for subjI in np.arange(n_subjects):
+        unique_relative_labels = np.unique(relative_labels[subjI])
+        for i, n in enumerate(unique_relative_labels):
+            if n == 181:
+                continue
+            U_labels[subjI, relative_labels[subjI]==n] = labels_in_glasser[i]
+
+    return U_labels.astype(int)

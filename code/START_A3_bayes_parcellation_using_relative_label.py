@@ -11,7 +11,7 @@ import os, pickle
 from nitools.cifti import surf_from_cifti
 import SUITPy.flatmap as flatmap
 import torch
-from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k, convert_prob_atlas_to_absolute_labels
+from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -64,15 +64,17 @@ else:
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(appendix.rstrip('_masked'))
 
 data = data[:, :, included_vtx_inds_LR]
-labels_relative = U[included_vtx_inds_LR]
+U_roi = U[included_vtx_inds_LR]
+
 
 ## converting the hard parcellation into a probabilistic one
-labels_in_glasser, labels_relative = np.unique(labels_relative, return_inverse=True)    # labels_in_glasser is a list of labels of parcels of interest in glasser parcellation, starting from 1
+# U = IndividualParcellation.utils.convert_hard_to_prob(U, strength=7.0)
+labels_in_glasser, U_roi = np.unique(U_roi, return_inverse=True)    # labels_in_glasser is a list of labels of parcels of interest in glasser parcellation, starting from 1
 parcel_names = get_roi_pacels('whole_cortex')
 parcel_names_in_glasser = [parcel_names[k-1] for k in labels_in_glasser]
-K = np.unique(labels_relative).size
+K = np.unique(U_roi).size
 
-logpi = ar.expand_mn_1d(labels_relative, K) * strength
+logpi = ar.expand_mn_1d(U_roi, K) * strength
 U_roi = torch.softmax(logpi, dim=0)
 
 # Build the arrangement model - the parameters are the log-probabilities of the atlas
@@ -132,15 +134,35 @@ output['V'] = M.emissions[0].V.numpy()
 with open(PKL_output, 'wb') as pf:
     pickle.dump(output, pf)
 
+# # loading saved U and U_indiv
+# with open(PKL_output, 'rb') as pf:
+#     output = pickle.load(pf)
+#
+# # U = output['U']
+# U_indiv = output['U_indiv']
+# ll = output['ll']
+
 ## Load colormap and labels
 lid,cmap,names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
+# modify these color settings when putting on a PFC mask
+if appendix != 'whole_cortex':
+    parcels = get_roi_pacels(appendix.rstrip('_masked'))
+    keep_inds = []
+    for i in np.arange(len(names)):
+        if names[i].split('_')[1] in parcels:
+            keep_inds.append(i)
+    lid = lid[keep_inds]
+    cmap = cmap[keep_inds]
+    names = list(map(names.__getitem__, keep_inds))
 
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 
 def plot_probseg(surf_data, cmap, hemi):
-    label = convert_prob_atlas_to_absolute_labels(surf_data, labels_in_glasser, excluded_vtx_inds_LR)
+    label = np.argmax(surf_data, axis=0) + 1
+    label[excluded_vtx_inds_LR] = 181
+
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(label.reshape(1, -1)))
 
     if hemi == 'L':

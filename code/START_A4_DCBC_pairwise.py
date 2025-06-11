@@ -3,11 +3,13 @@ import numpy as np
 import Functional_Fusion.atlas_map as am
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
+from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k, convert_prob_atlas_to_absolute_labels
 import DCBC.dcbc as DCBC
 from scipy.stats import ttest_ind
 from nitools.cifti import surf_from_cifti
-
+import nitools as nt
+import SUITPy.flatmap as flatmap
+from visualizations import *
 
 """
 This script computes the DCBC for each pair of parcels in PFC on individualized atlas (data only). 
@@ -40,26 +42,34 @@ if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
 
+included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
+
 ## loading individualized parcellation
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
-    U_indiv_label = np.argmax(U_indiv, axis=1) + 1
-
-included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
-U_indiv_label[:, excluded_vtx_inds_LR] = 0
+    labels_in_glasser = output_indiv['labels_in_glasser']
+    U_indiv_label = convert_prob_atlas_to_absolute_labels(U_indiv, labels_in_glasser, excluded_vtx_inds_LR)
+    parcel_names_in_glasser = output_indiv['parcel_names_in_glasser']
 
 parcels_ROI = get_roi_pacels(large_ROI)
 n_parcels = len(parcels_ROI)
-
 n_subjects = U_indiv_label.shape[0]
-parcels_inds_indiv = []
-for subjI in np.arange(n_subjects):
-    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(U_indiv_label[subjI].reshape(1, -1)))
-    parcels_inds_indiv.append(label_L.squeeze())
 
-parcels_inds_indiv = np.array(parcels_inds_indiv)
+## plotting the individualized parcellation
+# plt.figure()
+# for subjI in np.arange(n_subjects):
+#     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(U_indiv_label[subjI].reshape(1, -1)))
+#
+#     plt.clf()
+#     plt.subplot(1, 2, 1)
+#     plot_flatmap_labels(label_L, 'L')
+#     plt.subplot(1, 2, 2)
+#     plot_flatmap_labels(label_R, 'R')
+#     plt.suptitle(f'subject {subjI}')
+#     JPG_fig = os.path.join(resultsPath, f'individualized_parcellation_{large_ROI}_subject_{subjI}.jpg')
+#     plt.savefig(JPG_fig, dpi=400, format='jpg')
 
 output = dict()
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_{strength}_{large_ROI}_output.pkl')
@@ -80,8 +90,7 @@ X_individuals[np.isnan(X_individuals)] = 0
 
 for parI in np.arange(n_parcels-1):
     for parJ in np.arange(parI+1, n_parcels):
-        indices_ROI = [parI+1, parJ+1]
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}'] = {}
+        output[f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}'] = {}
 
         dcbc_across_subjects = []
         within_corrs_across_subjects = []
@@ -91,9 +100,11 @@ for parI in np.arange(n_parcels-1):
         nums_between = []       # counting the number of vertex pairs between parcels
         for subjI in np.arange(n_subjects):
             # get all the vertices that are in the ROI list
+            [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(U_indiv_label[subjI].reshape(1, -1)))
+            label_L = label_L.flatten().astype(int)
             vertex_label_ROI, vertex_ind_ROI = [], []
-            for i, label in enumerate(parcels_inds_indiv[subjI]):
-                if label in indices_ROI:
+            for i, label in enumerate(label_L):
+                if label in [labels_in_glasser[parI], labels_in_glasser[parJ]]:
                     vertex_label_ROI.append(label)
                     vertex_ind_ROI.append(i)
 
@@ -104,7 +115,7 @@ for parI in np.arange(n_parcels-1):
             spaMat = spaMat[:, vertex_ind_ROI]
 
             # only keep the left hemisphere cortex
-            select_inds = [x for x in np.arange(len(parcels_inds_indiv[subjI])) if parcels_inds_indiv[subjI][x] in indices_ROI]
+            select_inds = [x for x in included_vtx_inds_L if U_indiv_label[subjI, x] in [labels_in_glasser[parI], labels_in_glasser[parJ]]]
             data = X_individuals[subjI, :, select_inds]
 
             myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI, func=data,
@@ -137,9 +148,9 @@ for parI in np.arange(n_parcels-1):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.legend(['within', 'between'], frameon=False)
-        ax.set_title(f'{indices_ROI[0]} {indices_ROI[1]}, p={ttest_result.pvalue}')
+        ax.set_title(f'{parcel_names_in_glasser[parI]} {parcel_names_in_glasser[parJ]}, p={ttest_result.pvalue}')
 
-        JPG_fig = os.path.join(resultsPath, f'{indices_ROI[0]}_{indices_ROI[1]}_dcbc.jpg')
+        JPG_fig = os.path.join(resultsPath, f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}_dcbc.jpg')
         plt.savefig(JPG_fig, dpi=500, format='jpg')
 
         fig, ax = plt.subplots(1, 1)
@@ -153,16 +164,16 @@ for parI in np.arange(n_parcels-1):
         ax.spines['top'].set_visible(False)
         ax.spines['right'].set_visible(False)
         plt.legend(['within', 'between'], frameon=False)
-        ax.set_title(f'{indices_ROI[0]} {indices_ROI[1]}')
+        ax.set_title(f'{parcel_names_in_glasser[parI]} {parcel_names_in_glasser[parJ]}')
 
-        JPG_fig = os.path.join(resultsPath, f'{indices_ROI[0]}_{indices_ROI[1]}_counts.jpg')
+        JPG_fig = os.path.join(resultsPath, f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}_counts.jpg')
         plt.savefig(JPG_fig, dpi=500, format='jpg')
 
         # output[f'{indices_ROI[0]}_{indices_ROI[1]}']['dcbc_results'] = results
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['within_corrs'] = within_corrs
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['between_corrs'] = between_corrs
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['pvalue'] = ttest_result.pvalue
-        output[f'{indices_ROI[0]}_{indices_ROI[1]}']['DCBC'] = dcbc
+        output[f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}']['within_corrs'] = within_corrs
+        output[f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}']['between_corrs'] = between_corrs
+        output[f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}']['pvalue'] = ttest_result.pvalue
+        output[f'{parcel_names_in_glasser[parI]}_{parcel_names_in_glasser[parJ]}']['DCBC'] = dcbc
 
         plt.close('all')
 

@@ -1,11 +1,9 @@
-import os.path, pickle, scipy, torch
-import numpy as np
-import HierarchBayesParcel.arrangements as ar
+import os.path, pickle, scipy
 import Functional_Fusion.atlas_map as am
 import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
+from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k, convert_prob_atlas_to_absolute_labels
 from scipy.stats import ttest_ind
 from evaluations import *
 
@@ -25,8 +23,8 @@ dataset_name = 'MDTB' # or Demand
 strength = 7.0
 
 # defining ROIs
-large_ROI = 'PFC'
-# large_ROI = 'visual'
+# large_ROI = 'PFC'
+large_ROI = 'visual'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
@@ -58,18 +56,19 @@ included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_ind
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
     output_indiv = pickle.load(pf)
+    labels_in_glasser = output_indiv['labels_in_glasser']
+
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
-    U_indiv_label = np.argmax(U_indiv, axis=1) + 1
-    U_indiv_label[:, excluded_vtx_inds_LR] = 0
-    U_group_label = output_indiv['U']
+    # U_indiv_label = np.argmax(U_indiv, axis=1) + 1
+    # U_indiv_label[:, excluded_vtx_inds_LR] = 0
+    U_indiv_label = convert_prob_atlas_to_absolute_labels(U_indiv, labels_in_glasser, excluded_vtx_inds_LR)
 
-# since the U_group_label is 1d, we need to convert it to a parcel x vertex soft probablistic atlas
-_, U_group = np.unique(U_group_label, return_inverse=True)
-K = np.unique(U_group).size
+    U_group = output_indiv['U_roi']
+    # U_group_label = np.argmax(U_group, axis=0) + 1
+    # U_group_label[excluded_vtx_inds_LR] = 0
+    U_group_label = convert_prob_atlas_to_absolute_labels(U_group, labels_in_glasser, excluded_vtx_inds_LR)
+    V = output_indiv['V']
 
-logpi = ar.expand_mn_1d(U_group, K) * strength
-logpi = logpi[1:, :]
-U_group = torch.softmax(logpi, dim=0).detach().numpy()
 U_group = np.tile(U_group, (n_subjects, 1, 1))
 
 ## prediction error with leave-one-subject-out cross-validation

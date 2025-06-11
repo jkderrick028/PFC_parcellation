@@ -56,7 +56,7 @@ plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 
 ## plotting the spread / concentration of an individualized parcel
-strength = 7.0
+strength = 0.1
 
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
@@ -132,7 +132,7 @@ for subjI in np.arange(len(subjIs)):
 
 
 ## check the power of V
-strength = 1.0
+strength = 0.1
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):
@@ -148,7 +148,7 @@ n_parcels_per_indiv = [len(np.unique(x)) for x in U_indiv_label]
 n_vertices_per_parcel = np.zeros((n_subjects, n_parcels))
 for subjI in np.arange(n_subjects):
     vals, counts = np.unique(U_indiv_label[subjI], return_counts=True)
-    n_vertices_per_parcel[subjI] = counts
+    n_vertices_per_parcel[subjI] = counts[1:]
 
 # load V compute similarity between each pair of parcels
 V_simmats = np.corrcoef(V)
