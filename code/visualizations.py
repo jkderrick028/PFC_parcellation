@@ -1,10 +1,7 @@
-import os.path, pickle, scipy
+import os.path
 import numpy as np
 import Functional_Fusion.atlas_map as am
-import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
-from scipy.stats import ttest_ind
 from nitools.cifti import surf_from_cifti
 import nitools as nt
 import SUITPy.flatmap as flatmap
@@ -17,6 +14,9 @@ surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
+
+atlas_str = 'fs32k'
+atlas, ainf = am.get_atlas(atlas_str)
 
 def plot_flatmap_labels(label, hemi):
     lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
@@ -63,3 +63,34 @@ def plot_flatmap_labels(label, hemi):
                      underscale=[-1, 0.5]
         )
 
+
+def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr'):
+    [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(surf_data.reshape(1, -1)))
+
+    if hemi == 'L':
+        # left cortex
+        flatmap.plot(label_L.reshape(-1, ),
+                     surf=flat_surf_L,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     new_figure=False,
+                     frame=None,
+                     cmap=cmap,
+                     borders=border_LR,
+                     bordersize=1,
+                     cscale=cscale
+        )
+
+    else:
+        # right cortex
+        flatmap.plot(label_R.reshape(-1, ),
+                     surf=flat_surf_R,
+                     underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
+                     alpha=1,
+                     new_figure=False,
+                     frame=None,
+                     cmap=cmap,
+                     borders=border_LR,
+                     bordersize=1,
+                     cscale=cscale
+        )
