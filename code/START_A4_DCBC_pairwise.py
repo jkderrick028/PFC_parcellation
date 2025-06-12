@@ -57,20 +57,6 @@ parcels_ROI = get_roi_pacels(large_ROI)
 n_parcels = len(parcels_ROI)
 n_subjects = U_indiv_label.shape[0]
 
-## plotting the individualized parcellation
-# plt.figure()
-# for subjI in np.arange(n_subjects):
-#     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(U_indiv_label[subjI].reshape(1, -1)))
-#
-#     plt.clf()
-#     plt.subplot(1, 2, 1)
-#     plot_flatmap_labels(label_L, 'L')
-#     plt.subplot(1, 2, 2)
-#     plot_flatmap_labels(label_R, 'R')
-#     plt.suptitle(f'subject {subjI}')
-#     JPG_fig = os.path.join(resultsPath, f'individualized_parcellation_{large_ROI}_subject_{subjI}.jpg')
-#     plt.savefig(JPG_fig, dpi=400, format='jpg')
-
 output = dict()
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_{strength}_{large_ROI}_output.pkl')
 
@@ -87,6 +73,9 @@ with open(PKL_data, 'rb') as pf:
 
 cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 X_individuals[np.isnan(X_individuals)] = 0
+
+dcbc_pairwise = np.zeros((n_subjects, n_parcels, n_parcels))
+pvals_pairwise = np.zeros((n_parcels, n_parcels))
 
 for parI in np.arange(n_parcels-1):
     for parJ in np.arange(parI+1, n_parcels):
@@ -139,6 +128,8 @@ for parI in np.arange(n_parcels-1):
         ttest_result = ttest_ind(dcbc, 0, alternative='greater')
         significance_level = 0.05
         is_significant = ttest_result.pvalue < significance_level
+        dcbc_pairwise[:, parI, parJ] = dcbc
+        pvals_pairwise[parI, parJ] = ttest_result.pvalue
 
         fig, ax = plt.subplots(1, 1)
         ax.errorbar(np.arange(0, 35, step=bin_width), within_corrs_mean, yerr=within_corrs_ste)
@@ -177,6 +168,9 @@ for parI in np.arange(n_parcels-1):
 
         plt.close('all')
 
+
+output['dcbc_pairwise'] = dcbc_pairwise
+output['pvals_pairwise'] = pvals_pairwise
 
 with open(PKL_output, 'wb') as pk:
     pickle.dump(output, pk)
