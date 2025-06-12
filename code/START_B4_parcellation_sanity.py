@@ -169,12 +169,12 @@ output['V_simmats'] = V_simmats
 output['n_parcels_per_indiv'] = n_parcels_per_indiv
 output['n_vertices_per_parcel'] = n_vertices_per_parcel
 
-JPG_V_corrmat = os.path.join(resultsPath, f'V_corrmat.jpg')
+JPG_V_corrmat = os.path.join(resultsPath, f'V_corrmat_{large_ROI}.jpg')
 fig, ax = plt.subplots(1, 1)
 im = ax.imshow(V_simmats, cmap='bwr', vmin=-1, vmax=1)
 ax.set_aspect('equal')
 plt.colorbar(im)
-ax.set_title(f'V corrmat')
+ax.set_title(f'V corrmat {large_ROI}')
 ax.set_xlabel('parcels')
 ax.set_ylabel('parcels')
 
