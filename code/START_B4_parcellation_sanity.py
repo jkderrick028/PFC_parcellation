@@ -6,6 +6,7 @@ import os, pickle
 from visualizations import flatmap_real_vals, plot_flatmap_labels
 from nitools.cifti import surf_from_cifti
 from py_util_dx.data_utils import convert_prob_atlas_to_absolute_labels, get_roi_vtx_from_fs32k
+from scipy.spatial.distance import pdist
 
 
 projectPath, mainResultsPath = setProjectPath()
@@ -13,8 +14,8 @@ projectPath, mainResultsPath = setProjectPath()
 dataset_name = 'MDTB' # or Demand
 
 # defining ROIs
-large_ROI = 'PFC'
-# large_ROI = 'visual'
+# large_ROI = 'PFC'
+large_ROI = 'visual'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 
@@ -23,7 +24,7 @@ atlas, ainf = am.get_atlas(atlas_str)
 
 ## plot DCBC as a function of strengths
 # strengths = [0.01, 0.1, 0.5, 1.0, 7.0]
-strengths = [20.0]
+strengths = [7.0]
 
 included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
@@ -59,7 +60,7 @@ plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 
 ## plotting the spread / concentration of an individualized parcel
-strength = 20.0
+strength = 7.0
 
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
@@ -76,43 +77,18 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
 
 n_subjects, n_parcels, P = U_indiv.shape
 
-## for each subject separately
-# subjIs = [0, 1]
-# parcelIs = [3, 4, 15, 16, 30, 32, 41, 43]
-#
-# plt.figure()
-# for subjI in np.arange(len(subjIs)):
-#     for parI in np.arange(len(parcelIs)):
-#         group_label = 181 * np.ones(U_group_label.shape)
-#         group_label = group_label.astype(int)
-#         group_label[U_group_label == labels_in_glasser[parcelIs[parI]]] = labels_in_glasser[parcelIs[parI]]
-#
-#         [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(group_label.reshape(1, -1)))
-#
-#         plt.clf()
-#         plt.subplot(2, 2, 1)
-#         plot_flatmap_labels(label_L, 'L')
-#
-#         plt.subplot(2, 2, 2)
-#         plot_flatmap_labels(label_R, 'R')
-#
-#         surf_data = U_indiv[subjI, parcelIs[parI]]
-#         plt.subplot(2, 2, 3)
-#         flatmap_real_vals(surf_data, 'L')
-#
-#         plt.subplot(2, 2, 4)
-#         flatmap_real_vals(surf_data, 'R')
-#
-#         plt.tight_layout()
-#
-#         plt.suptitle(f'subject {subjIs[subjI]}, parcel {parcel_names_in_glasser[parcelIs[parI]]}')
-#         JPG_fig = os.path.join(resultsPath, f'parcel_spread_subj_{subjIs[subjI]}_{parcel_names_in_glasser[parcelIs[parI]]}.jpg')
-#         plt.savefig(JPG_fig, dpi=500, format='jpg')
-
-
 ## for mean across subjects
-U_indiv = np.mean(U_indiv, axis=0)
-# U_indiv = np.divide(U_indiv, U_indiv.sum(axis=0, keepdims=True))
+U_indiv_mean_across_subjects = np.mean(U_indiv, axis=0)
+
+# computing the correlation of the individualized atlas and the glasser group atlas
+cosine_indiv_glasser = np.zeros((n_parcels,))
+for parI in np.arange(n_parcels):
+    indiv_parcellation = U_indiv_mean_across_subjects[parI, included_vtx_inds_LR]
+    group_parcellation = U_group[parI, included_vtx_inds_LR]
+    # corr_indiv_glasser[parI] = np.corrcoef(indiv_parcellation, group_parcellation)[0, 1]
+    cosine_indiv_glasser[parI] = 1 - pdist(np.array([indiv_parcellation, group_parcellation]), metric='cosine')
+
+
 plt.figure()
 
 for parI in np.arange(n_parcels):
@@ -128,7 +104,7 @@ for parI in np.arange(n_parcels):
     plt.subplot(2, 2, 2)
     plot_flatmap_labels(label_R, 'R')
 
-    surf_data = U_indiv[parI]
+    surf_data = U_indiv_mean_across_subjects[parI]
     plt.subplot(2, 2, 3)
     flatmap_real_vals(surf_data, 'L')
 
@@ -168,6 +144,7 @@ output['V'] = V
 output['V_simmats'] = V_simmats
 output['n_parcels_per_indiv'] = n_parcels_per_indiv
 output['n_vertices_per_parcel'] = n_vertices_per_parcel
+output['cosine_indiv_glasser'] = cosine_indiv_glasser
 
 JPG_V_corrmat = os.path.join(resultsPath, f'V_corrmat_{large_ROI}.jpg')
 fig, ax = plt.subplots(1, 1)
