@@ -20,7 +20,7 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 20.0
+strength = 7.0
 
 # defining ROIs
 large_ROI = 'PFC'
@@ -59,13 +59,9 @@ with open(PKL_individualized_parcellation, 'rb') as pf:
     labels_in_glasser = output_indiv['labels_in_glasser']
 
     U_indiv = output_indiv['Uhat_data']         # data only parcellation
-    # U_indiv_label = np.argmax(U_indiv, axis=1) + 1
-    # U_indiv_label[:, excluded_vtx_inds_LR] = 0
     U_indiv_label = convert_prob_atlas_to_absolute_labels(U_indiv, labels_in_glasser, excluded_vtx_inds_LR)
 
     U_group = output_indiv['U_roi']
-    # U_group_label = np.argmax(U_group, axis=0) + 1
-    # U_group_label[excluded_vtx_inds_LR] = 0
     U_group_label = convert_prob_atlas_to_absolute_labels(U_group, labels_in_glasser, excluded_vtx_inds_LR)
     V = output_indiv['V']
 
