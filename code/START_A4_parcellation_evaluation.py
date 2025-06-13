@@ -20,11 +20,11 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 7.0
+strength = 20.0
 
 # defining ROIs
-# large_ROI = 'PFC'
-large_ROI = 'visual'
+large_ROI = 'PFC'
+# large_ROI = 'visual'
 # large_ROI = 'somatosensory'
 # large_ROI = 'parietal'
 

@@ -18,7 +18,7 @@ projectPath, mainResultsPath = setProjectPath()
 
 dataset_name = 'MDTB' # or Demand
 
-strength = 7.0
+strength = 20.0
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):
@@ -27,8 +27,8 @@ if not os.path.exists(resultsPath):
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
 # appendix = 'whole_cortex'   # or PFC_masked
-# appendix = 'PFC_masked'
-appendix = 'visual_masked'
+appendix = 'PFC_masked'
+# appendix = 'visual_masked'
 # appendix = 'somatosensory_masked'
 # appendix = 'parietal_masked'
 

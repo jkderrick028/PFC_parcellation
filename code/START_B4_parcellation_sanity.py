@@ -13,21 +13,21 @@ projectPath, mainResultsPath = setProjectPath()
 dataset_name = 'MDTB' # or Demand
 
 # defining ROIs
-# large_ROI = 'PFC'
+large_ROI = 'PFC'
 # large_ROI = 'visual'
 # large_ROI = 'somatosensory'
-large_ROI = 'parietal'
+# large_ROI = 'parietal'
 
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
 ## plot DCBC as a function of strengths
 # strengths = [0.01, 0.1, 0.5, 1.0, 7.0]
-strengths = [7.0]
+strengths = [20.0]
 
 included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(large_ROI)
 
-resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
+resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}')
 if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
@@ -59,7 +59,7 @@ plt.savefig(JPG_fig, dpi=500, format='jpg')
 
 
 ## plotting the spread / concentration of an individualized parcel
-strength = 7.0
+strength = 20.0
 
 PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}_{strength}', f'output_{large_ROI}_masked.pkl')
 with open(PKL_individualized_parcellation, 'rb') as pf:
@@ -143,7 +143,7 @@ for parI in np.arange(n_parcels):
 
 
 ## check the power of V
-strength = 7.0
+strength = 20.0
 
 resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}_{strength}')
 if not os.path.exists(resultsPath):
