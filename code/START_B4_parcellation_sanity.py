@@ -86,7 +86,7 @@ for parI in np.arange(n_parcels):
     indiv_parcellation = U_indiv_mean_across_subjects[parI, included_vtx_inds_LR]
     group_parcellation = U_group[parI, included_vtx_inds_LR]
     # corr_indiv_glasser[parI] = np.corrcoef(indiv_parcellation, group_parcellation)[0, 1]
-    cosine_indiv_glasser[parI] = 1 - pdist(np.array([indiv_parcellation, group_parcellation]), metric='cosine')
+    cosine_indiv_glasser[parI] = 1 - pdist(np.array([indiv_parcellation, group_parcellation]), metric='cosine')[0]
 
 
 plt.figure()
