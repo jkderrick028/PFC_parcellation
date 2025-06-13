@@ -75,12 +75,14 @@ x_group = np.ones(len(cosine_distances_group))
 x_indiv = 2*np.ones(len(cosine_distances_indiv))
 x_cosine_dist = np.concatenate([x_group, x_indiv])
 cosine_dist_concat = np.concatenate([cosine_distances_group, cosine_distances_indiv])
+ttest_result = ttest_ind(cosine_distances_group, cosine_distances_indiv, alternative='two-sided')
+
 plt.figure()
 plt.scatter(x_cosine_dist, cosine_dist_concat)
 plt.xticks([1, 2], labels=['group', 'indiv'])
 plt.xlabel('atlas type')
 plt.ylabel('cosine dist')
-plt.title('prediction error using glasser and indiv atlas')
+plt.title(f'prediction error {large_ROI}, p={ttest_result.pvalue}')
 JPG_fig = os.path.join(resultsPath, f'prediction_error_{large_ROI}.jpg')
 plt.savefig(JPG_fig, dpi=500, format='jpg')
 
@@ -99,10 +101,9 @@ glasser_R = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
 # make sure that the input parcels are of shape (N,)
 gii_file = nib.load(glasser_L)
 
-dict_parcel_indices = get_glasser_labels()  # {parcel: label}
-
 parcels_inds = gii_file.darrays[0].data
 parcels_ROI = get_roi_pacels(large_ROI)
+dict_parcel_indices = get_glasser_labels()  # {parcel: label}
 indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
 
 # get all the vertices that are in the ROI list

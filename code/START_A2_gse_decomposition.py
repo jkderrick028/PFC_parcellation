@@ -95,11 +95,11 @@ border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 normalization_method = 'gs'
 
 if normalization_method == 'gse':
-    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'], np.tile(np.sum(output['PFC']['voxel_wise'], axis=1).reshape(-1, 1), (1, 3)))
-    voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'], np.tile(np.sum(output['whole_cortex']['voxel_wise'], axis=1).reshape(-1, 1), (1, 3)))
+    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'], np.sum(output['PFC']['voxel_wise'], axis=1, keepdims=True))
+    voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'], np.sum(output['whole_cortex']['voxel_wise'], axis=1, keepdims=True))
 else:
-    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'][:, 0:2], np.tile(np.sum(output['PFC']['voxel_wise'][:, 0:2], axis=1).reshape(-1, 1), (1, 2)))
-    voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'][:, 0:2], np.tile(np.sum(output['whole_cortex']['voxel_wise'][:, 0:2], axis=1).reshape(-1, 1), (1, 2)))
+    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'][:, 0:2], np.sum(output['PFC']['voxel_wise'][:, 0:2], axis=1, keepdims=True))
+    voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'][:, 0:2], np.sum(output['whole_cortex']['voxel_wise'][:, 0:2], axis=1, keepdims=True))
 
 # v_g
 [v_g_extended_L, v_g_extended_R] = surf_from_cifti(atlas.data_to_cifti(voxel_wise_cortex[:, 0].reshape(1, -1)))

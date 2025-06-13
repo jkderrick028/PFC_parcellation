@@ -64,7 +64,7 @@ def plot_flatmap_labels(label, hemi):
         )
 
 
-def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr'):
+def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr', colorbar=False):
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(surf_data.reshape(1, -1)))
 
     if hemi == 'L':
@@ -92,5 +92,6 @@ def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr'):
                      cmap=cmap,
                      borders=border_LR,
                      bordersize=1,
-                     cscale=cscale
+                     cscale=cscale,
+                     colorbar=colorbar
         )
