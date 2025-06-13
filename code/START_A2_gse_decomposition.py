@@ -24,7 +24,6 @@ if not os.path.exists(resultsPath):
     os.makedirs(resultsPath)
 
 output = dict()
-output['PFC'] = {}
 output['whole_cortex'] = {}
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 
@@ -57,7 +56,7 @@ criterion = 'condition_wise'
 variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
 output['whole_cortex'][criterion] = variances
 
-## PFC
+## ROIs
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
@@ -69,22 +68,25 @@ glasser_right = os.path.join(surface_helpers_dir, 'glasser.R.label.gii')
 flat_surf_L = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii')
 flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 
-## loading individualized parcellation and glasser group parcellation
-included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('PFC')
+ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
+n_rois = len(ROIs)
 
-data = data[:, :, :, included_vtx_inds_LR]
+for roiI in np.arange(n_rois):
+    output[ROIs[roiI]] = {}
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROIs[roiI])
+    data_roi = data[:, :, :, included_vtx_inds_LR]
 
-criterion = 'global'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
-output['PFC'][criterion] = variances
+    criterion = 'global'
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+    output[ROIs[roiI]][criterion] = variances
 
-criterion = 'voxel_wise'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
-output['PFC'][criterion] = variances
+    criterion = 'voxel_wise'
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+    output[ROIs[roiI]][criterion] = variances
 
-criterion = 'condition_wise'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
-output['PFC'][criterion] = variances
+    criterion = 'condition_wise'
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+    output[ROIs[roiI]][criterion] = variances
 
 # flatmap visualization
 underlay_L = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii')
