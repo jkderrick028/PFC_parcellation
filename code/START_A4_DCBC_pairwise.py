@@ -2,6 +2,8 @@ import os, pickle, scipy
 import numpy as np
 import Functional_Fusion.atlas_map as am
 import matplotlib.pyplot as plt
+
+from START_A4_DCBC import significance_level
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
@@ -161,6 +163,18 @@ def run_pairwise_dcbc(ROI):
 
     output['dcbc_pairwise'] = dcbc_pairwise
     output['pvals_pairwise'] = pvals_pairwise
+
+    ## make a thresholded plot of pairwise DCBC
+    significance_level = 0.05
+    mean_dcbc = np.mean(dcbc_pairwise, axis=0)
+    inds_significant = np.where(np.logical_and(pvals_pairwise<significance_level, pvals_pairwise>0))
+    dcbc_thresholded = np.zeros(mean_dcbc.shape)
+    dcbc_thresholded[inds_significant] = mean_dcbc[inds_significant]
+
+    plt.figure()
+    plt.imshow(dcbc_thresholded, cmap='bwr', vmin=-1, vmax=1)
+    plt.title('mean pairwise DCBC')
+    plt.colorbar()
 
     with open(PKL_output, 'wb') as pk:
         pickle.dump(output, pk)
