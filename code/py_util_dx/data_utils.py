@@ -134,7 +134,7 @@ def get_glasser_labels():
     return dict_parcel_indices
 
 
-def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_inds_LR):
+def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_inds_LR, inds_U_zero):
     """
     This function converts a probabilistic atlas to a hard parcellation, where each vertex is assigned a label, using the absolute label corresponding to the glasser parcellation
 
@@ -145,6 +145,8 @@ def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_ind
                 original labels in the glasser parcellation for the parcels of interest
         excluded_vtx_inds_LR: np.ndarray
                 specifying the indices of vertices that fall out of the ROI
+        inds_U_zero: np.ndarray (boolean)
+                indicating where the 0's are out of the 59518 vertices. 0's can only be part of the excluded_vtx_inds_LR
     Returns:
         U_labels:           np.ndarray (n_subjects x 59518)
     """
@@ -158,15 +160,25 @@ def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_ind
     else:
         raise(NameError('U can only be 2d or 3d!'))
 
+    # relative_labels = np.argmax(U, axis=1)
+    # relative_labels[:, excluded_vtx_inds_LR] = 181
+    # U_labels = 181 * np.ones((n_subjects, n_vertices)).astype(int)
+    #
+    # for subjI in np.arange(n_subjects):
+    #     unique_relative_labels = np.unique(relative_labels[subjI])
+    #     for i, n in enumerate(unique_relative_labels):
+    #         if n == 181:
+    #             continue
+    #         U_labels[subjI, relative_labels[subjI]==n] = labels_in_glasser[i]
+
     relative_labels = np.argmax(U, axis=1)
-    relative_labels[:, excluded_vtx_inds_LR] = 181
-    U_labels = 181 * np.ones((n_subjects, n_vertices))
+    U_labels = []
 
     for subjI in np.arange(n_subjects):
-        unique_relative_labels = np.unique(relative_labels[subjI])
-        for i, n in enumerate(unique_relative_labels):
-            if n == 181:
-                continue
-            U_labels[subjI, relative_labels[subjI]==n] = labels_in_glasser[i]
+        U_labels.append(labels_in_glasser[relative_labels[subjI]])
 
-    return U_labels.astype(int)
+    U_labels = np.array(U_labels)
+    U_labels[:, excluded_vtx_inds_LR] = 181
+    U_labels[:, inds_U_zero] = 0
+
+    return U_labels
