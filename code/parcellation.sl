@@ -10,5 +10,4 @@
 
 source ~/pfc_parcellation/bin/activate
 
-python START_A3_bayes_parcellation.py
 python START_A4_DCBC_pairwise.py 
