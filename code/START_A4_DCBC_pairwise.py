@@ -2,8 +2,6 @@ import os, pickle, scipy
 import numpy as np
 import Functional_Fusion.atlas_map as am
 import matplotlib.pyplot as plt
-
-from START_A4_DCBC import significance_level
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
@@ -175,6 +173,8 @@ def run_pairwise_dcbc(ROI):
     plt.imshow(dcbc_thresholded, cmap='bwr', vmin=-1, vmax=1)
     plt.title('mean pairwise DCBC')
     plt.colorbar()
+    JPG_fig = os.path.join(resultsPath, f'mean_pairwise_dcbc.jpg')
+    plt.savefig(JPG_fig, dpi=500, format='jpg')
 
     with open(PKL_output, 'wb') as pk:
         pickle.dump(output, pk)
