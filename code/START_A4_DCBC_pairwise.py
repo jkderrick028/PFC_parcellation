@@ -187,4 +187,4 @@ if __name__=='__main__':
     for roi in ROIs:
         run_pairwise_dcbc(roi)
 
-    # run_pairwise_dcbc('visual')
+    # run_pairwise_dcbc('parietal')
