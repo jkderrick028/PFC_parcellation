@@ -173,7 +173,7 @@ def run_pairwise_dcbc(ROI):
     plt.imshow(dcbc_thresholded, cmap='bwr', vmin=-1, vmax=1)
     plt.title('mean pairwise DCBC')
     plt.colorbar()
-    JPG_fig = os.path.join(resultsPath, f'mean_pairwise_dcbc.jpg')
+    JPG_fig = os.path.join(resultsPath, f'mean_pairwise_dcbc_{ROI}.jpg')
     plt.savefig(JPG_fig, dpi=500, format='jpg')
 
     with open(PKL_output, 'wb') as pk:
