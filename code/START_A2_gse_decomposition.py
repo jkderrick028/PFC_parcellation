@@ -94,7 +94,11 @@ for roiI in np.arange(n_rois):
         variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
         output[ROIs[roiI]][criterion].append(variances.flatten())
 
-# flatmap visualization
+
+with open(PKL_output, 'wb') as pk:
+    pickle.dump(output, pk)
+
+## flatmap visualization
 underlay_L = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii')
 underlay_R = os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii')
 border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
@@ -171,6 +175,3 @@ if normalization_method == 'gse':
     fig.savefig(PS_variance, format='png', dpi=500)
 plt.show()
 
-
-with open(PKL_output, 'wb') as pk:
-    pickle.dump(output, pk)
