@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_roi_vtx_from_fs32k
 import DCBC.dcbc as DCBC
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_1samp
 from nitools.cifti import surf_from_cifti
 from visualizations import *
 
@@ -120,7 +120,7 @@ def run_pairwise_dcbc(ROI):
 
             ## testing weather dcbc is significantly higher than 0
             dcbc = np.array(dcbc_across_subjects)
-            ttest_result = ttest_ind(dcbc, 0, alternative='greater')
+            ttest_result = ttest_1samp(dcbc, 0, alternative='greater')
             dcbc_pairwise[:, parI, parJ] = dcbc
             pvals_pairwise[parI, parJ] = ttest_result.pvalue
 

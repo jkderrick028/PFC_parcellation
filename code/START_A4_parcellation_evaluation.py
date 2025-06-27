@@ -3,7 +3,7 @@ import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
-from scipy.stats import ttest_ind
+from scipy.stats import ttest_ind, ttest_1samp
 from evaluations import *
 
 
@@ -142,7 +142,7 @@ def run_parcellation_evaluation(ROI):
 
         ## testing weather dcbc is significantly higher than 0
         dcbc = np.array(dcbc)
-        ttest_result = ttest_ind(dcbc, 0, alternative='greater')
+        ttest_result = ttest_1samp(dcbc, 0, alternative='greater')
         significance_level = 0.05
         is_significant = ttest_result.pvalue < significance_level
 
