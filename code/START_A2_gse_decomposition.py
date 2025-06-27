@@ -15,6 +15,8 @@ This scripts decomposes the data into group, individual and noise variance compo
 
 projectPath, mainResultsPath = setProjectPath()
 
+np.random.seed(0)
+
 dataset_name = 'MDTB' # or Demand
 
 surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
@@ -44,6 +46,7 @@ data = flat2ndarray(X_individuals, part_vec, cond_vec)
 # fill nans with 0
 data[np.isnan(data)] = 0
 
+## voxel-wise decomposition for the whole cortex: make a flatmap for the entire cortex (vs/(vs+vg))
 criterion = 'global'
 variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
 output['whole_cortex'][criterion] = variances
@@ -56,7 +59,8 @@ criterion = 'condition_wise'
 variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
 output['whole_cortex'][criterion] = variances
 
-## ROIs
+
+## global response pattern decomposition for ROIs: bootstrap resample conditions
 # Get the atlas
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
@@ -71,22 +75,24 @@ flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
 n_rois = len(ROIs)
 
+n_bootstraps = 100
+n_subjects, n_partitions, n_conditions, n_voxels = data.shape
+boot_conditions = []
+for bootI in np.arange(n_bootstraps):
+    conds = np.random.choice(n_conditions, n_conditions, replace=True)
+    boot_conditions.append(conds)
+
 for roiI in np.arange(n_rois):
     output[ROIs[roiI]] = {}
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROIs[roiI])
-    data_roi = data[:, :, :, included_vtx_inds_LR]
-
     criterion = 'global'
-    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
-    output[ROIs[roiI]][criterion] = variances
+    output[ROIs[roiI]][criterion] = []
 
-    criterion = 'voxel_wise'
-    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
-    output[ROIs[roiI]][criterion] = variances
-
-    criterion = 'condition_wise'
-    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
-    output[ROIs[roiI]][criterion] = variances
+    for bootI in np.arange(n_bootstraps):
+        data_roi = data[:, :, :, included_vtx_inds_LR]
+        data_roi = data_roi[:, :, boot_conditions[bootI], :]
+        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+        output[ROIs[roiI]][criterion].append(variances.flatten())
 
 # flatmap visualization
 underlay_L = os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii')
@@ -97,10 +103,8 @@ border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 normalization_method = 'gs'
 
 if normalization_method == 'gse':
-    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'], np.sum(output['PFC']['voxel_wise'], axis=1, keepdims=True))
     voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'], np.sum(output['whole_cortex']['voxel_wise'], axis=1, keepdims=True))
 else:
-    voxel_wise_PFC = np.divide(output['PFC']['voxel_wise'][:, 0:2], np.sum(output['PFC']['voxel_wise'][:, 0:2], axis=1, keepdims=True))
     voxel_wise_cortex = np.divide(output['whole_cortex']['voxel_wise'][:, 0:2], np.sum(output['whole_cortex']['voxel_wise'][:, 0:2], axis=1, keepdims=True))
 
 # v_g
@@ -111,10 +115,10 @@ nHors = 1
 nVers = 2
 fig, axs = plt.subplots(nHors, nVers, figsize=(15, 12), num=figI_flatmap)
 plt.axes(axs[0])
-flatmap.plot(v_g_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[-0.2, 0.9], borders=border_LR, frame=None, new_figure=False)
+flatmap.plot(v_g_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[0, 0.9], borders=border_LR, frame=None, new_figure=False)
 axs[0].set_title('cortex L')
 plt.axes(axs[1])
-flatmap.plot(v_g_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[-0.2, 0.9], borders=border_LR, frame=None, new_figure=False, colorbar=True)
+flatmap.plot(v_g_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[0, 0.9], borders=border_LR, frame=None, new_figure=False, colorbar=True)
 axs[1].set_title('cortex R')
 
 # plt.tight_layout()
@@ -131,10 +135,10 @@ plt.clf()
 
 fig, axs = plt.subplots(nHors, nVers, figsize=(15, 12), num=figI_flatmap)
 plt.axes(axs[0])
-flatmap.plot(v_s_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[-0.2, 0.9], borders=border_LR, frame=None, new_figure=False)
+flatmap.plot(v_s_extended_L.reshape(-1, ), surf=flat_surf_L, underlay=underlay_L, alpha=1, cscale=[0, 0.9], borders=border_LR, frame=None, new_figure=False)
 axs[0].set_title('cortex L')
 plt.axes(axs[1])
-flatmap.plot(v_s_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[-0.2, 0.9], borders=border_LR, frame=None, new_figure=False, colorbar=True)
+flatmap.plot(v_s_extended_R.reshape(-1, ), surf=flat_surf_R, underlay=underlay_R, alpha=1, cscale=[0, 0.9], borders=border_LR, frame=None, new_figure=False, colorbar=True)
 axs[1].set_title('cortex R')
 
 # plt.tight_layout()
