@@ -85,8 +85,14 @@ for bootI in np.arange(n_bootstraps):
 for roiI in np.arange(n_rois):
     output[ROIs[roiI]] = {}
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROIs[roiI])
+
     criterion = 'global'
     output[ROIs[roiI]][criterion] = []
+
+    # first get the decomposition results on the original data without bootstrapping conditions
+    data_roi = data[:, :, :, included_vtx_inds_LR]
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+    output[ROIs[roiI]][criterion].append(variances.flatten())
 
     for bootI in np.arange(n_bootstraps):
         data_roi = data[:, :, :, included_vtx_inds_LR]
