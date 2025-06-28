@@ -370,7 +370,7 @@ def compute_var_cov_np_cv(data, cond='all', mean_centering=True):
              var - the variance matrix of current subject data, shape [N * N]
     """
     if mean_centering:
-        mean = data.mean(axis=-1, keepdim=True)
+        mean = data.mean(axis=-1, keepdims=True)
         data = data - mean  # mean centering
     else:
         data = data

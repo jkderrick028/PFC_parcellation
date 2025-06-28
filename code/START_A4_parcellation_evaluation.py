@@ -5,6 +5,7 @@ from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 from scipy.stats import ttest_ind, ttest_1samp
 from evaluations import *
+from Functional_Fusion.dataset import flat2ndarray
 
 
 """
@@ -33,8 +34,12 @@ def run_parcellation_evaluation(ROI):
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
 
+    cv = True  # we use cross-validated DCBC
     output = dict()
-    PKL_output = os.path.join(resultsPath, f'output_{ROI}.pkl')
+    if cv:
+        PKL_output = os.path.join(resultsPath, f'output_{ROI}_cv.pkl')
+    else:
+        PKL_output = os.path.join(resultsPath, f'output_{ROI}.pkl')
 
     ## loading MDTB data
     PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
@@ -109,21 +114,30 @@ def run_parcellation_evaluation(ROI):
     spatialMat = spatialMat[:, vertex_ind_ROI]
 
     # Create a DCBC evaluation object of the desired evaluation parameters(left hemisphere)
-    cv = True  # we use cross-validated DCBC
     if cv:
         ## loading MDTB data
         PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
         with open(PKL_data, 'rb') as pf:
             original_data = pickle.load(pf)
             X_individuals = original_data['X_individuals']
+            info_individuals = original_data['info_individuals']
+            dataset_obj_individuals = original_data['dataset_obj_individuals']
 
         # fill nans with 0
         X_individuals[np.isnan(X_individuals)] = 0
         n_subjects = X_individuals.shape[0]
 
+        part_vec = list(info_individuals['half'])
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+        data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
+
+    else:
+        X_individuals[np.isnan(X_individuals)] = 0
+        n_subjects = X_individuals.shape[0]
+        data = X_individuals[:, :, included_vtx_inds_L]
+
     U_indiv_label = indiv_parcellation[:, included_vtx_inds_L]
     U_group_label = np.tile(group_parcellation, (n_subjects, 1))[:, included_vtx_inds_L]
-    data = X_individuals[:, :, included_vtx_inds_L]
 
     output_dcbc_group = compute_dcbc_indiv(U_group_label, data, spatialMat, cv=cv)
     output_dcbc_indiv = compute_dcbc_indiv(U_indiv_label, data, spatialMat, cv=cv)
@@ -132,7 +146,10 @@ def run_parcellation_evaluation(ROI):
     within_corrs = output_dcbc_group['within_corrs']
     between_corrs = output_dcbc_group['between_corrs']
     dcbc_group = output_dcbc_group['dcbc']
-    JPG_fig = os.path.join(resultsPath, f'DCBC_group_{ROI}.jpg')
+    if cv:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_group_{ROI}_cv.jpg')
+    else:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_group_{ROI}.jpg')
 
 
     def summarize_dcbc(within_corrs, between_corrs, dcbc, fig_path, atlas_type):
@@ -159,8 +176,8 @@ def run_parcellation_evaluation(ROI):
         is_significant = ttest_result.pvalue < significance_level
 
         fig, ax = plt.subplots(1, 1)
-        ax.errorbar(np.arange(0, 35, step=5), within_corrs_mean, yerr=within_corrs_ste)
-        ax.errorbar(np.arange(0, 35, step=5), between_corrs_mean, yerr=between_corrs_ste)
+        ax.errorbar(5+np.arange(0, 35, step=5), within_corrs_mean, yerr=within_corrs_ste)
+        ax.errorbar(5+np.arange(0, 35, step=5), between_corrs_mean, yerr=between_corrs_ste)
         ax.set_xlabel('distance (mm)')
         ax.set_ylabel('vertex-to-vertex correlation')
         ax.spines['top'].set_visible(False)
@@ -180,7 +197,10 @@ def run_parcellation_evaluation(ROI):
     within_corrs = output_dcbc_indiv['within_corrs']
     between_corrs = output_dcbc_indiv['between_corrs']
     dcbc_indiv = output_dcbc_indiv['dcbc']
-    JPG_fig = os.path.join(resultsPath, f'DCBC_indiv_{ROI}.jpg')
+    if cv:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_indiv_{ROI}_cv.jpg')
+    else:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_indiv_{ROI}.jpg')
 
     summarize_dcbc(within_corrs, between_corrs, dcbc_indiv, JPG_fig, 'indiv')
 
@@ -194,7 +214,10 @@ def run_parcellation_evaluation(ROI):
     plt.xlabel('atlas type')
     plt.ylabel('dcbc')
     plt.title('DCBC using glasser and indiv atlas')
-    JPG_fig = os.path.join(resultsPath, f'DCBC_scatter_{ROI}.jpg')
+    if cv:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_scatter_{ROI}_cv.jpg')
+    else:
+        JPG_fig = os.path.join(resultsPath, f'DCBC_scatter_{ROI}.jpg')
     plt.savefig(JPG_fig, dpi=500, format='jpg')
 
     output['output_dcbc_group'] = output_dcbc_group
