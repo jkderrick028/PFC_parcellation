@@ -43,14 +43,16 @@ def prediction_error_cv(U_hat, Y_test, type='hard'):
     return np.array(cosine_distances)
 
 
-def compute_dcbc_indiv(U, data, spatialMat):
+def compute_dcbc_indiv(U, data, spatialMat, cv=False):
     """
     computing dabc for each subject using individualized parcellations
     Args:
         U: np.ndarray (n_subjects x n_vertices)
             each element is the label for a vertex
         data: np.ndarray (n_subjects x n_conditions x n_vertices)
+            if cv=True, data is of shape (n_subjects x n_partitions x n_conditions x n_vertices)
         spatialMat: np.ndarray (n_vertices x n_vertices)
+        cv: whether to use cross-validated variance and covariance
 
     Returns:
         output dictionary
@@ -62,11 +64,18 @@ def compute_dcbc_indiv(U, data, spatialMat):
     dcbc = []
     output = {}
 
-    n_subjects, n_conditions, n_vertices = data.shape
+    if cv:
+        n_subjects, n_partitions, n_conditions, n_vertices = data.shape
+    else:
+        n_subjects, n_conditions, n_vertices = data.shape
 
     for subjI in np.arange(n_subjects):
-        myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=U[subjI], func=data[subjI].T,
-                                   dist=spatialMat, weighting=True, backend='numpy')
+        if cv:
+            myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=U[subjI], func=np.transpose(data[subjI], [0, 2, 1]),
+                                       dist=spatialMat, weighting=True, backend='numpy', cv=True)
+        else:
+            myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=5, parcellation=U[subjI], func=data[subjI].T,
+                                       dist=spatialMat, weighting=True, backend='numpy', cv=False)
         results.append(myDCBC)
         within_corrs.append(myDCBC['corr_within'])
         between_corrs.append(myDCBC['corr_between'])

@@ -316,7 +316,7 @@ def compute_dist_np(coord, resolution=2):
 
 
 ### variance / covariance
-def compute_var_cov(data, cond='all', mean_centering=True, backend='torch'):
+def compute_var_cov(data, cond='all', mean_centering=True, backend='torch', cv=False):
     """ Compute the variance and covariance for a given data matrix.
         Automatically chooses the backend or uses user-specified backend.
 
@@ -332,6 +332,7 @@ def compute_var_cov(data, cond='all', mean_centering=True, backend='torch'):
         backend: the backend for the calculation. If "numpy", then following
                  calculation will be using numpy. If "torch", then following
                  calculation will be on PyTorch.
+        cv: whether to use cross-validated variance and covariance estimates
 
     Returns: cov - the covariance matrix of current subject data, shape [N * N]
              var - the variance matrix of current subject data, shape [N * N]
@@ -342,9 +343,55 @@ def compute_var_cov(data, cond='all', mean_centering=True, backend='torch'):
         assert type(data) is pt.Tensor, "Input data must be pytorch tensor!"
         return compute_var_cov_pt(data, cond=cond, mean_centering=mean_centering)
     elif backend == 'numpy' or not TORCH_AVAILABLE:
-        return compute_var_cov_np(data, cond=cond, mean_centering=mean_centering)
+        if cv is True:
+            return compute_var_cov_np_cv(data, cond=cond, mean_centering=mean_centering)
+        else:
+            return compute_var_cov_np(data, cond=cond, mean_centering=mean_centering)
     else:
         raise ValueError("Torch not available and no valid backend specified!")
+
+
+def compute_var_cov_np_cv(data, cond='all', mean_centering=True):
+    """ Compute the variance and covariance for a given data matrix with cross-validation .
+        (Numpy CPU version)
+
+    Args:
+        data: subject's connectivity profile, shape [R * N * k]
+                     R - the number of partitions or runs (R=2)
+                     N - the size of vertices (voxel)
+                     k - the size of activation conditions
+        cond: specify the subset of activation conditions to evaluation
+              (e.g condition column [1,2,3,4]), if not given, default to
+              use all conditions
+        mean_centering: boolean value to determine whether the given subject
+                        data should be mean centered
+
+    Returns: cov - the covariance matrix of current subject data, shape [N * N]
+             var - the variance matrix of current subject data, shape [N * N]
+    """
+    if mean_centering:
+        mean = data.mean(axis=-1, keepdim=True)
+        data = data - mean  # mean centering
+    else:
+        data = data
+
+    # specify the condition index used to compute correlation,
+    # otherwise use all conditions
+    if cond != 'all':
+        data = data[:, :, cond]
+    elif cond == 'all':
+        data = data
+    else:
+        raise TypeError("Invalid condition type input! cond must be either 'all'"
+                        " or the column indices of expected task conditions")
+
+    k = data.shape[-1]
+    X1 = data[0]
+    X2 = data[1]
+    cov = (X1 @ X2.T + X2 @ X1.T) / (2 * (k - 1))
+    sd = np.sqrt(np.diag(cov)).reshape((-1, 1))
+    var = sd @ sd.T
+    return cov, var
 
 
 def compute_var_cov_np(data, cond='all', mean_centering=True):

@@ -109,12 +109,24 @@ def run_parcellation_evaluation(ROI):
     spatialMat = spatialMat[:, vertex_ind_ROI]
 
     # Create a DCBC evaluation object of the desired evaluation parameters(left hemisphere)
+    cv = True  # we use cross-validated DCBC
+    if cv:
+        ## loading MDTB data
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
+        with open(PKL_data, 'rb') as pf:
+            original_data = pickle.load(pf)
+            X_individuals = original_data['X_individuals']
+
+        # fill nans with 0
+        X_individuals[np.isnan(X_individuals)] = 0
+        n_subjects = X_individuals.shape[0]
+
     U_indiv_label = indiv_parcellation[:, included_vtx_inds_L]
     U_group_label = np.tile(group_parcellation, (n_subjects, 1))[:, included_vtx_inds_L]
     data = X_individuals[:, :, included_vtx_inds_L]
 
-    output_dcbc_group = compute_dcbc_indiv(U_group_label, data, spatialMat)
-    output_dcbc_indiv = compute_dcbc_indiv(U_indiv_label, data, spatialMat)
+    output_dcbc_group = compute_dcbc_indiv(U_group_label, data, spatialMat, cv=cv)
+    output_dcbc_indiv = compute_dcbc_indiv(U_indiv_label, data, spatialMat, cv=cv)
 
     ## making results figures for group atlas
     within_corrs = output_dcbc_group['within_corrs']

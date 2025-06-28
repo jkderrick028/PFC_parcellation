@@ -19,7 +19,7 @@ except ImportError:
 
 
 def compute_DCBC(maxDist=35, binWidth=1, parcellation=np.empty([]),
-                 func=None, dist=None, weighting=True, backend='torch'):
+                 func=None, dist=None, weighting=True, backend='torch', cv=False):
     """ DCBC calculation.
         Automatically chooses the backend or uses user-specified backend.
 
@@ -39,6 +39,7 @@ def compute_DCBC(maxDist=35, binWidth=1, parcellation=np.empty([]),
         backend: the backend for the calculation. If "numpy", then following
                  calculation will be using numpy. If "torch", then following
                  calculation will be on PyTorch.
+        cv: whether to use cross-validated variance and covariance estimates
 
     Returns:
         D: a dictionary contains necessary information for DCBC analysis
@@ -56,13 +57,13 @@ def compute_DCBC(maxDist=35, binWidth=1, parcellation=np.empty([]),
     elif backend == 'numpy' or not TORCH_AVAILABLE:
         return compute_DCBC_np(maxDist=maxDist, binWidth=binWidth,
                                parcellation=parcellation, func=func,
-                               dist=dist, weighting=weighting)
+                               dist=dist, weighting=weighting, cv=cv)
     else:
         raise ValueError("Torch not available and no valid backend specified!")
 
 
 def compute_DCBC_np(maxDist=35, binWidth=1, parcellation=np.empty([]),
-                    func=None, dist=None, weighting=True):
+                    func=None, dist=None, weighting=True, cv=False):
     """ DCBC calculation (Numpy version)
 
     Args:
@@ -74,16 +75,19 @@ def compute_DCBC_np(maxDist=35, binWidth=1, parcellation=np.empty([]),
               N - the dimensionality of underlying data, i.e. the number
               of task contrasts or the number of resting-state networks
               P - the number of brain voxels / vertices
+              Note: if cv is True, func is of shape (R, N, P) where R
+              is the number of runs or partitions
         dist: the pairwise distance matrix between P brain locations. It
               can be a dense matrix or sparse tensor
         weighting: If True, the DCBC result is weighted averaged across
                    spatial bins. If False, it is plain averaged.
+        cv: if True, use cross-validated variance and covariance
 
     Returns:
         D: a dictionary contains necessary information for DCBC analysis
     """
     numBins = int(np.floor(maxDist / binWidth))
-    cov, var = compute_var_cov(func, backend='numpy')
+    cov, var = compute_var_cov(func, backend='numpy', cv=cv)
 
     # remove the nan value and medial wall from dist file
     row, col, distance = sp.sparse.find(dist)
