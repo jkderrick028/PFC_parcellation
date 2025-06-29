@@ -18,7 +18,7 @@ border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
-def plot_flatmap_labels(label, hemi):
+def plot_flatmap_labels(label, hemi, frame=None, borders=True):
     lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
 
     if hemi == 'L':
@@ -32,10 +32,10 @@ def plot_flatmap_labels(label, hemi):
                      alpha=1,
                      label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
-                     frame=None,
+                     frame=frame,
                      render='matplotlib',
                      cmap=cmap,
-                     borders=border_LR,
+                     borders=None if borders is None else border_LR,
                      overlay_type='label',
                      bordersize=3,
                      undermap='gray',
@@ -53,10 +53,10 @@ def plot_flatmap_labels(label, hemi):
                      alpha=1,
                      label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
-                     frame=None,
+                     frame=frame,
                      render='matplotlib',
                      cmap=cmap,
-                     borders=border_LR,
+                     borders=None if borders is None else border_LR,
                      overlay_type='label',
                      bordersize=3,
                      undermap='gray',
