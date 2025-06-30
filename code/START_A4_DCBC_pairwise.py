@@ -8,6 +8,7 @@ import DCBC.dcbc as DCBC
 from scipy.stats import ttest_1samp
 from nitools.cifti import surf_from_cifti
 from visualizations import *
+from Functional_Fusion.dataset import flat2ndarray
 
 """
 This script computes the DCBC for each pair of parcels in PFC on individualized atlas (data only). 
@@ -27,7 +28,7 @@ def run_pairwise_dcbc(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
-
+    cv = True  # we use cross-validated DCBC
     bin_width = 5 # mm
 
     # Get the atlas
@@ -53,7 +54,6 @@ def run_pairwise_dcbc(ROI):
 
     parcels_ROI = get_roi_pacels(ROI)
     n_parcels = len(parcels_ROI)
-    n_subjects = U_individual.shape[0]
 
     output = dict()
     PKL_output = os.path.join(resultsPath, f'output_{ROI}.pkl')
@@ -61,13 +61,34 @@ def run_pairwise_dcbc(ROI):
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
-    # loading MDTB dataset
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
-    with open(PKL_data, 'rb') as pf:
-        original_data = pickle.load(pf)
-        X_individuals = original_data['X_individuals']
 
-    X_individuals[np.isnan(X_individuals)] = 0
+    if cv:
+        ## loading MDTB data
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
+        with open(PKL_data, 'rb') as pf:
+            original_data = pickle.load(pf)
+            X_individuals = original_data['X_individuals']
+            info_individuals = original_data['info_individuals']
+            dataset_obj_individuals = original_data['dataset_obj_individuals']
+
+        # fill nans with 0
+        X_individuals[np.isnan(X_individuals)] = 0
+        n_subjects = X_individuals.shape[0]
+
+        part_vec = list(info_individuals['half'])
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+        data = flat2ndarray(X_individuals, part_vec, cond_vec)
+
+    else:
+        ## loading MDTB dataset
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
+        with open(PKL_data, 'rb') as pf:
+            original_data = pickle.load(pf)
+            X_individuals = original_data['X_individuals']
+
+        X_individuals[np.isnan(X_individuals)] = 0
+        n_subjects = X_individuals.shape[0]
+        data = X_individuals
 
     dcbc_pairwise = np.zeros((n_subjects, n_parcels, n_parcels))
     pvals_pairwise = np.zeros((n_parcels, n_parcels))
@@ -85,7 +106,7 @@ def run_pairwise_dcbc(ROI):
             for subjI in np.arange(n_subjects):
                 # get all the vertices that are in the ROI list
                 [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(indiv_parcellation[subjI].reshape(1, -1)))
-                label_L = label_L.flatten().astype(int)
+                label_L = label_L.flatten()
                 vertex_label_ROI, vertex_ind_ROI = [], []
                 for i, label in enumerate(label_L):
                     if label in [labels_in_glasser[parI], labels_in_glasser[parJ]]:
@@ -100,10 +121,20 @@ def run_pairwise_dcbc(ROI):
 
                 # only keep the left hemisphere cortex
                 select_inds = [x for x in included_vtx_inds_L if indiv_parcellation[subjI, x] in [labels_in_glasser[parI], labels_in_glasser[parJ]]]
-                data = X_individuals[subjI, :, select_inds]
+                if cv:
+                    data_dcbc = data[subjI]
+                    data_dcbc = data_dcbc[:, :, select_inds]
+                else:
+                    data_dcbc = data[subjI]
+                    data_dcbc = data_dcbc[:, select_inds]
 
-                myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI, func=data,
-                                           dist=spaMat, weighting=True, backend='numpy', cv=True)
+                if cv:
+                    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI,
+                                               func=np.transpose(data_dcbc, [0, 2, 1]),
+                                               dist=spaMat, weighting=True, backend='numpy', cv=True)
+                else:
+                    myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI, func=data_dcbc.T,
+                                               dist=spaMat, weighting=True, backend='numpy', cv=False)
                 dcbc_across_subjects.append(myDCBC['DCBC'])
                 within_corrs_across_subjects.append(myDCBC['corr_within'])
                 between_corrs_across_subjects.append(myDCBC['corr_between'])
@@ -125,8 +156,8 @@ def run_pairwise_dcbc(ROI):
             pvals_pairwise[parI, parJ] = ttest_result.pvalue
 
             fig, ax = plt.subplots(1, 1)
-            ax.errorbar(np.arange(0, 35, step=bin_width), within_corrs_mean, yerr=within_corrs_ste)
-            ax.errorbar(np.arange(0, 35, step=bin_width), between_corrs_mean, yerr=between_corrs_ste)
+            ax.errorbar(5+np.arange(0, 35, step=bin_width), within_corrs_mean, yerr=within_corrs_ste)
+            ax.errorbar(5+np.arange(0, 35, step=bin_width), between_corrs_mean, yerr=between_corrs_ste)
             ax.set_xlabel('distance (mm)')
             ax.set_ylabel('vertex-to-vertex correlation')
             ax.spines['top'].set_visible(False)
@@ -138,8 +169,8 @@ def run_pairwise_dcbc(ROI):
             plt.savefig(JPG_fig, dpi=500, format='jpg')
 
             fig, ax = plt.subplots(1, 1)
-            ax.bar(np.arange(0, 35, bin_width), np.array(nums_within).mean(axis=0))
-            ax.bar(np.arange(0, 35, bin_width) + 0.5, np.array(nums_between).mean(axis=0))
+            ax.bar(5+np.arange(0, 35, bin_width), np.array(nums_within).mean(axis=0))
+            ax.bar(5+np.arange(0, 35, bin_width) + 0.5, np.array(nums_between).mean(axis=0))
 
             ax.set_xlabel('distance (mm)')
             ax.set_ylabel('vertex pair counts')
