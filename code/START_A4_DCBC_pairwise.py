@@ -103,7 +103,7 @@ def run_pairwise_dcbc(ROI):
                 data = X_individuals[subjI, :, select_inds]
 
                 myDCBC = DCBC.compute_DCBC(maxDist=35, binWidth=bin_width, parcellation=vertex_label_ROI, func=data,
-                                           dist=spaMat, weighting=True, backend='numpy')
+                                           dist=spaMat, weighting=True, backend='numpy', cv=True)
                 dcbc_across_subjects.append(myDCBC['DCBC'])
                 within_corrs_across_subjects.append(myDCBC['corr_within'])
                 between_corrs_across_subjects.append(myDCBC['corr_between'])
