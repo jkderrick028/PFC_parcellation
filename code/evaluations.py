@@ -1,7 +1,131 @@
 import numpy as np
 from scipy.spatial import distance
 import DCBC.dcbc as DCBC
+from DCBC.utilities import compute_var_cov
 import torch as pt
+import scipy as sp
+
+
+# def spatial_ACF_cv(maxDist=35, binWidth=1, func=None, dist=None):
+#     """
+#     cross-validated spatial ACF
+#
+#     Args:
+#         maxDist: The maximum distance for vertices pairs, default 35 mm
+#         binWidth: The spatial binning width in mm, default 1 mm
+#         func: the functional data for evaluating, shape (N, P),
+#               N - the dimensionality of underlying data, i.e. the number
+#               of task contrasts or the number of resting-state networks
+#               P - the number of brain voxels / vertices
+#               Note: if cv is True, func is of shape (R, N, P) where R
+#               is the number of runs or partitions
+#         dist: the pairwise distance matrix between P brain locations. It
+#               can be a dense matrix or sparse tensor
+#
+#     Returns:
+#         D: a dictionary contains necessary information for DCBC analysis
+#     """
+#     numBins = int(np.floor(maxDist / binWidth))
+#     cov, var = compute_var_cov(func, backend='numpy', cv=True)
+#
+#     # remove the nan value and medial wall from dist file
+#     row, col, distance = sp.sparse.find(dist)
+#
+#     nums, corrs = [], []
+#     # at distance 0
+#     nums.append(len(np.diagonal(cov)))
+#     # corrs.append(np.nanmean(np.diagonal(cov)) / np.nanmean(np.diagonal(var)))
+#     corrs.append(np.nanmean(np.diagonal(cov) / np.diagonal(var)))
+#
+#     for i in range(numBins):
+#         inBin = np.where((distance > i * binWidth) & (distance <= (i + 1) * binWidth))[0]
+#
+#         # retrieve and append the number of vertices for within/between in current bin
+#         nums.append(len(inBin))
+#
+#         # Compute and append averaged within- and between-parcel correlations in current bin
+#         # this_corr = (np.nanmean(cov[row[inBin], col[inBin]])
+#         #              / np.nanmean(var[row[inBin], col[inBin]]))
+#
+#         this_corr = np.nanmean(cov[row[inBin], col[inBin]] / var[row[inBin], col[inBin]])
+#
+#         corrs.append(this_corr)
+#
+#         del inBin
+#
+#     nums = np.array(nums)
+#     corrs = np.array(corrs)
+#     dists = np.arange(0, maxDist+0.5, binWidth)
+#
+#     D = {
+#         "binWidth": binWidth,
+#         "maxDist": maxDist,
+#         "nums": nums,
+#         "corrs": corrs,
+#         "dists": dists
+#     }
+#
+#     return D
+
+
+def spatial_ACF_cv(maxDist=35, binWidth=1, func=None, dist=None):
+    """
+    cross-validated spatial ACF
+
+    Args:
+        maxDist: The maximum distance for vertices pairs, default 35 mm
+        binWidth: The spatial binning width in mm, default 1 mm
+        func: the functional data for evaluating, shape (N, P),
+              N - the dimensionality of underlying data, i.e. the number
+              of task contrasts or the number of resting-state networks
+              P - the number of brain voxels / vertices
+              Note: if cv is True, func is of shape (R, N, P) where R
+              is the number of runs or partitions
+        dist: the pairwise distance matrix between P brain locations. It
+              can be a dense matrix or sparse tensor
+
+    Returns:
+        D: a dictionary contains necessary information for DCBC analysis
+    """
+    numBins = int(np.floor(maxDist / binWidth))
+    cov, var = compute_var_cov(func, backend='numpy', cv=True)
+
+    # remove the nan value and medial wall from dist file
+    row, col, distance = sp.sparse.find(dist)
+
+    nums, corrs = [], []
+
+    # at distance 0
+    nums.append(len(np.diagonal(cov)))
+    corrs.append(np.nanmean(np.diagonal(cov)) / np.nanmean(np.diagonal(cov)))
+
+    for i in range(numBins):
+        inBin = np.where((distance > i * binWidth) & (distance <= (i + 1) * binWidth))[0]
+
+        # retrieve and append the number of vertices for within/between in current bin
+        nums.append(len(inBin))
+
+        # Compute and append averaged within- and between-parcel correlations in current bin
+        this_corr = (np.nanmean(cov[row[inBin], col[inBin]])
+                     / np.nanmean(var[row[inBin], col[inBin]]))
+
+        corrs.append(this_corr)
+
+        del inBin
+
+    nums = np.array(nums)
+    corrs = np.array(corrs)
+    dists = np.arange(0, maxDist+0.5, binWidth)
+
+    D = {
+        "binWidth": binWidth,
+        "maxDist": maxDist,
+        "nums": nums,
+        "corrs": corrs,
+        "dists": dists
+    }
+
+    return D
 
 
 def prediction_error_cv(U_hat, Y_test, type='hard'):

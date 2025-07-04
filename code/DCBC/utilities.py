@@ -389,6 +389,7 @@ def compute_var_cov_np_cv(data, cond='all', mean_centering=True):
     X1 = data[0]
     X2 = data[1]
     cov = (X1 @ X2.T + X2 @ X1.T) / (2 * (k - 1))
+    # sd = np.sqrt(np.abs(np.diag(cov))).reshape((-1, 1))
     sd = np.sqrt(np.diag(cov)).reshape((-1, 1))
     var = sd @ sd.T
     return cov, var
