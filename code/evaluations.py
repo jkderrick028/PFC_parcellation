@@ -36,7 +36,8 @@ def prediction_error_cv(U_hat, Y_test, type='hard'):
         V = np.matmul(U_train, Y_train)
         V = V.mean(axis=0)
 
-        Y_pred = (np.linalg.pinv(U[subjI]) @ V).T
+        U_test = np.divide(U[subjI], np.sum(U[subjI], axis=-1, keepdims=True))
+        Y_pred = (np.linalg.pinv(U_test) @ V).T
         cos_dist = distance.cosine(Y_pred.flatten(), Y_test[subjI].flatten())
         cosine_distances.append(cos_dist)
 
