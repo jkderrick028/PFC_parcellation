@@ -11,7 +11,7 @@
 module load StdEnv/2020  gcc/9.3.0
 module load fsl/6.0.4
 
-export PATH=$PATH:~/projects/def-hallett-ab/jxiang27/toolkits/workbench/bin_rh_linux64/
+export PATH=$PATH:~/projects/def-mmur/jxiang27/toolkits/workbench/bin_rh_linux64/
 
 source ~/pfc_parcellation/bin/activate
 
