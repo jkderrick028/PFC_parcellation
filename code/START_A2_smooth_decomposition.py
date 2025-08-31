@@ -114,7 +114,7 @@ for roi in ROIs:
 criterion = 'global'
 
 for smoothing_kernel in smoothing_kernels:
-    output[smoothing_kernel] = {}
+    output[f'{smoothing_kernel}_mm'] = {}
 
     PKL_smoothed = os.path.join(resultsPath, f'smoothed_{smoothing_kernel}_mm.pkl')
     with open(PKL_smoothed, 'rb') as pf:
@@ -126,16 +126,7 @@ for smoothing_kernel in smoothing_kernels:
     for roi in ROIs:
         data_region = data[:, :, :, included_vtx_inds_LR_dict[roi]]
         variances = decompose_pattern_into_group_indiv_noise(data_region, criterion=criterion)
-
-        if smoothing_kernel in ['orig', 'residuals']:
-            output[smoothing_kernel][roi] = variances
-        else:
-            output[f'{smoothing_kernel}_mm'][roi] = variances
-
-    if smoothing_kernel in ['orig', 'residuals']:
-        print(f'finished decomposing {smoothing_kernel}')
-    else:
-        print(f'finished decomposing smoothed_{smoothing_kernel}_mm')
+        output[f'{smoothing_kernel}_mm'][roi] = variances
 
 with open(PKL_output, 'wb') as pk:
     pickle.dump(output, pk)
