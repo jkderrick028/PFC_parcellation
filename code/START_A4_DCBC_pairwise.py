@@ -27,9 +27,9 @@ def run_pairwise_dcbc(ROI):
 
     projectPath, mainResultsPath = setProjectPath()
 
-    dataset_name = 'MDTB' # or Demand
-    cv = True  # we use cross-validated DCBC
-    bin_width = 5 # mm
+    dataset_name = 'MDTB'   # or Demand
+    cv = False              # we use cross-validated DCBC
+    bin_width = 5           # mm
 
     # Get the atlas
     atlas_str = 'fs32k'
