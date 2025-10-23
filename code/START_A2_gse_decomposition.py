@@ -31,27 +31,27 @@ output = dict()
 output['whole_cortex'] = {}
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 
-# PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
-# with open(PKL_data, 'rb') as pf:
-#     original_data = pickle.load(pf)
-#     X_individuals = original_data['X_individuals']
-#     info_individuals = original_data['info_individuals']
-#     dataset_obj_individuals = original_data['dataset_obj_individuals']
-#
+PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+with open(PKL_data, 'rb') as pf:
+    original_data = pickle.load(pf)
+    X_individuals = original_data['X_individuals']
+    info_individuals = original_data['info_individuals']
+    dataset_obj_individuals = original_data['dataset_obj_individuals']
+
 # part_vec = list(info_individuals['half'])
 # # part_vec = [int(x[-1]) for x in part_vec]
 # cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
-base_dir = '/cifs/diedrichsen/data/FunctionalFusion_new'
-
-X_individuals, info_individuals, dataset_obj = ds.get_dataset(base_dir,
-                                                              dataset=dataset_name,
-                                                              atlas='fs32k',
-                                                              sess='all',
-                                                              type='CondHalf')
+# base_dir = '/cifs/diedrichsen/data/FunctionalFusion_new'
+#
+# X_individuals, info_individuals, dataset_obj = ds.get_dataset(base_dir,
+#                                                               dataset=dataset_name,
+#                                                               atlas='fs32k',
+#                                                               sess='all',
+#                                                               type='CondHalf')
 
 part_vec = list(info_individuals['half'])
-cond_vec = list(info_individuals[dataset_obj.cond_ind])
+cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
 # fill nans with 0
 X_individuals[np.isnan(X_individuals)] = 0
@@ -105,13 +105,13 @@ for roiI in np.arange(n_rois):
 
     # first get the decomposition results on the original data without bootstrapping conditions
     data_roi = data[:, :, :, included_vtx_inds_LR]
-    variances = decompose_pattern_into_group_indiv_noise(data_roi, separate=criterion)
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
     output[ROIs[roiI]][criterion].append(variances.flatten())
 
     for bootI in np.arange(n_bootstraps):
         data_roi = data[:, :, :, included_vtx_inds_LR]
         data_roi = data_roi[:, :, boot_conditions[bootI], :]
-        variances = decompose_pattern_into_group_indiv_noise(data_roi, separate=criterion)
+        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
         output[ROIs[roiI]][criterion].append(variances.flatten())
 
 
