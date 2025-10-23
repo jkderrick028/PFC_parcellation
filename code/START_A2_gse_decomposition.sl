@@ -9,5 +9,7 @@
 #SBATCH --output=slurm_outputs/%x_%A.out
 
 source ~/pfc_parcellation/bin/activate
+module load singularity/3.8
+module load apptainer/1.1
 
 python START_A2_gse_decomposition.py
