@@ -1,10 +1,11 @@
 import os.path, pickle
 import numpy as np
 import Functional_Fusion.atlas_map as am
+import Functional_Fusion.dataset as ds
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_vtx_from_fs32k
-from Functional_Fusion.dataset import decompose_pattern_into_group_indiv_noise, flat2ndarray
+from Functional_Fusion.reliability import decompose_subj_group, flat2ndarray
 import SUITPy.flatmap as flatmap
 from nitools.cifti import surf_from_cifti
 
@@ -29,16 +30,27 @@ output = dict()
 output['whole_cortex'] = {}
 PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 
-PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
-with open(PKL_data, 'rb') as pf:
-    original_data = pickle.load(pf)
-    X_individuals = original_data['X_individuals']
-    info_individuals = original_data['info_individuals']
-    dataset_obj_individuals = original_data['dataset_obj_individuals']
+# PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+# with open(PKL_data, 'rb') as pf:
+#     original_data = pickle.load(pf)
+#     X_individuals = original_data['X_individuals']
+#     info_individuals = original_data['info_individuals']
+#     dataset_obj_individuals = original_data['dataset_obj_individuals']
+#
+# part_vec = list(info_individuals['half'])
+# # part_vec = [int(x[-1]) for x in part_vec]
+# cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+
+base_dir = '/cifs/diedrichsen/data/FunctionalFusion'
+
+X_individuals, info_individuals, dataset_obj = ds.get_dataset(base_dir,
+                                                              dataset=dataset_name,
+                                                              atlas='fs32k',
+                                                              sess='all',
+                                                              type='CondHalf')
 
 part_vec = list(info_individuals['half'])
-# part_vec = [int(x[-1]) for x in part_vec]
-cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+cond_vec = list(info_individuals[dataset_obj.cond_ind])
 
 ## whole cortex
 data = flat2ndarray(X_individuals, part_vec, cond_vec)
@@ -48,15 +60,15 @@ data[np.isnan(data)] = 0
 
 ## voxel-wise decomposition for the whole cortex: make a flatmap for the entire cortex (vs/(vs+vg))
 criterion = 'global'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
+variances = decompose_subj_group(data, criterion='none')
 output['whole_cortex'][criterion] = variances
 
 criterion = 'voxel_wise'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
+variances = decompose_subj_group(data, criterion=criterion)
 output['whole_cortex'][criterion] = variances
 
 criterion = 'condition_wise'
-variances = decompose_pattern_into_group_indiv_noise(data, criterion=criterion)
+variances = decompose_subj_group(data, criterion=criterion)
 output['whole_cortex'][criterion] = variances
 
 
@@ -91,13 +103,13 @@ for roiI in np.arange(n_rois):
 
     # first get the decomposition results on the original data without bootstrapping conditions
     data_roi = data[:, :, :, included_vtx_inds_LR]
-    variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+    variances = decompose_subj_group(data_roi, criterion=criterion)
     output[ROIs[roiI]][criterion].append(variances.flatten())
 
     for bootI in np.arange(n_bootstraps):
         data_roi = data[:, :, :, included_vtx_inds_LR]
         data_roi = data_roi[:, :, boot_conditions[bootI], :]
-        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+        variances = decompose_subj_group(data_roi, criterion=criterion)
         output[ROIs[roiI]][criterion].append(variances.flatten())
 
 

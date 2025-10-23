@@ -602,12 +602,16 @@ class AtlasSurface(Atlas):
             row_axis = [f"row {r:03}" for r in range(data.shape[0])]
             row_axis = nb.cifti2.ScalarAxis(row_axis)
         elif hasattr(row_axis, "__iter__"):
-            assert data.shape[0] == len(row_axis), "The length of row_axis should match the data!"
+            assert data.shape[0] == len(
+                row_axis
+            ), "The length of row_axis should match the data!"
             row_axis = nb.cifti2.ScalarAxis(row_axis)
         elif isinstance(row_axis, nb.cifti2.cifti2_axes.Axis):
             pass
         else:
-            raise ValueError("The input row_axis instance type does not meet the requirement!")
+            raise ValueError(
+                "The input row_axis instance type does not meet the requirement!"
+            )
 
         bm = self.get_brain_model_axis()
         header = nb.Cifti2Header.from_axes((row_axis, bm))
@@ -623,18 +627,26 @@ class AtlasSurface(Atlas):
 
         Args:
             img (nibabel.image) or str: Cifti or its filename or
-                                        list of gifti images
+                                        (list of) gifti images
+                                        or gifti if single hemisphere
             interpolation (int): nearest neighbour (0), trilinear (1)
         Returns:
             data (ndarray): (N,P) ndarray
         """
         if isinstance(img, str):
             img = nb.load(img)
+            data = img.get_fdata()
         if isinstance(img, nb.Cifti2Image):
             data = self.cifti_to_data(img)
-        elif isinstance(img, list):
+        elif isinstance(img, nb.gifti.gifti.GiftiImage):
+            if len(self.structure) > 1:
+                raise (NameError("Need to pass a Cifti file or list of giftis"))
+            else:
+                img = [img]
+        if isinstance(img, list):
             if len(img) != len(self.structure):
-                raise (NameError("Number of images needs to match len(self.structure)"))
+                raise (NameError(
+                    "Number of images needs to match len(self.structure)"))
             data = []
             for i, im in enumerate(img):
                 if isinstance(im, str):
@@ -704,9 +716,13 @@ class AtlasSurface(Atlas):
         # Make the brain Structure models
         for i, name in enumerate(self.structure):
             if i == 0:
-                bm = nb.cifti2.BrainModelAxis.from_mask(self.vertex_mask[i], name=self.structure[i])
+                bm = nb.cifti2.BrainModelAxis.from_mask(
+                    self.vertex_mask[i], name=self.structure[i]
+                )
             else:
-                bm = bm + nb.cifti2.BrainModelAxis.from_mask(self.vertex_mask[i], name=self.structure[i])
+                bm = bm + nb.cifti2.BrainModelAxis.from_mask(
+                    self.vertex_mask[i], name=self.structure[i]
+                )
         return bm
 
     def get_parcel_axis(self):
@@ -914,7 +930,7 @@ class AtlasMap:
         return mask_img
 
 class AtlasMapDeform(AtlasMap):
-    def __init__(self, world, deform_img, mask_img=None):
+    def __init__(self, world, deform_img, mask_img):
         """AtlasMapDeform stores the mapping rules for a non-linear deformation
         to the desired atlas space in form of a voxel list from source space
 
@@ -931,12 +947,8 @@ class AtlasMapDeform(AtlasMap):
                 deform_img = [deform_img]
             for di in deform_img:
                 self.deform_img.append(nb.load(di))
-        if mask_img is not None:
-            self.mask_img = nb.load(mask_img)
-        else: 
-            raise(NameError("Mask image is required for AtlasMapDeform"))
-        
-        
+        self.mask_img = nb.load(mask_img)
+
     def build(self, interpolation=1, smooth=None, additional_mask=None):
         """ Using the dataset, builds a list of voxel indices of
         For each of the locations. It creates:
@@ -1145,7 +1157,7 @@ def get_data_cifti(fnames, atlases):
         cifti = nb.load(f)
         for i, at in enumerate(atlases):
             if isinstance(at, AtlasMapDeform):
-                V = nt.volume_from_cifti(cifti)
+                V = nt.volume_from_cifti(cifti, ["cerebellum"])
                 data[i].append(get_data_nifti([V], [at])[0])
             elif isinstance(at, AtlasVolumetric):
                 V = nt.volume_from_cifti(cifti, [at.structure])
