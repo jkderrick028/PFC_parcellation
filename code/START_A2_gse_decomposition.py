@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_vtx_from_fs32k
 from Functional_Fusion.reliability import decompose_subj_group, flat2ndarray
+from Functional_Fusion_old.dataset import decompose_pattern_into_group_indiv_noise
 import SUITPy.flatmap as flatmap
 from nitools.cifti import surf_from_cifti
 
@@ -41,7 +42,7 @@ PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 # # part_vec = [int(x[-1]) for x in part_vec]
 # cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
-base_dir = '/cifs/diedrichsen/data/FunctionalFusion'
+base_dir = '/cifs/diedrichsen/data/FunctionalFusion_new'
 
 X_individuals, info_individuals, dataset_obj = ds.get_dataset(base_dir,
                                                               dataset=dataset_name,
@@ -52,23 +53,20 @@ X_individuals, info_individuals, dataset_obj = ds.get_dataset(base_dir,
 part_vec = list(info_individuals['half'])
 cond_vec = list(info_individuals[dataset_obj.cond_ind])
 
-## whole cortex
-data = flat2ndarray(X_individuals, part_vec, cond_vec)
-
 # fill nans with 0
-data[np.isnan(data)] = 0
+X_individuals[np.isnan(X_individuals)] = 0
 
 ## voxel-wise decomposition for the whole cortex: make a flatmap for the entire cortex (vs/(vs+vg))
 criterion = 'global'
-variances = decompose_subj_group(data, criterion='none')
+variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate='none')
 output['whole_cortex'][criterion] = variances
 
 criterion = 'voxel_wise'
-variances = decompose_subj_group(data, criterion=criterion)
+variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion)
 output['whole_cortex'][criterion] = variances
 
 criterion = 'condition_wise'
-variances = decompose_subj_group(data, criterion=criterion)
+variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion)
 output['whole_cortex'][criterion] = variances
 
 
@@ -87,6 +85,10 @@ flat_surf_R = os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii')
 ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
 n_rois = len(ROIs)
 
+
+## whole cortex
+data = flat2ndarray(X_individuals, part_vec, cond_vec)
+
 n_bootstraps = 100
 n_subjects, n_partitions, n_conditions, n_voxels = data.shape
 boot_conditions = []
@@ -103,13 +105,13 @@ for roiI in np.arange(n_rois):
 
     # first get the decomposition results on the original data without bootstrapping conditions
     data_roi = data[:, :, :, included_vtx_inds_LR]
-    variances = decompose_subj_group(data_roi, criterion=criterion)
+    variances = decompose_pattern_into_group_indiv_noise(data_roi, separate=criterion)
     output[ROIs[roiI]][criterion].append(variances.flatten())
 
     for bootI in np.arange(n_bootstraps):
         data_roi = data[:, :, :, included_vtx_inds_LR]
         data_roi = data_roi[:, :, boot_conditions[bootI], :]
-        variances = decompose_subj_group(data_roi, criterion=criterion)
+        variances = decompose_pattern_into_group_indiv_noise(data_roi, separate=criterion)
         output[ROIs[roiI]][criterion].append(variances.flatten())
 
 
