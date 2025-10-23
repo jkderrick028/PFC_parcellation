@@ -33,7 +33,7 @@ def START_A2_gse_decomposition(dataset_name):
     output['whole_cortex'] = {}
     PKL_output = os.path.join(resultsPath, f'{dataset_name}_output.pkl')
 
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half.pkl')
+    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf.pkl')
     with open(PKL_data, 'rb') as pf:
         original_data = pickle.load(pf)
         X_individuals = original_data['X_individuals']
