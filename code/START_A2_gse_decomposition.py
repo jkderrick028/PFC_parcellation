@@ -53,7 +53,10 @@ def START_A2_gse_decomposition(dataset_name):
     #                                                               type='CondHalf')
 
     part_vec = list(info_individuals['half'])
-    cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+    if dataset_name == 'Nishimoto':
+        cond_vec = list(info_individuals['cond_num'])
+    else:
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
     # fill nans with 0
     X_individuals[np.isnan(X_individuals)] = 0
@@ -200,7 +203,9 @@ def START_A2_gse_decomposition(dataset_name):
 
 
 if __name__=='__main__':
-    datasets = ['MDTB', 'HCPur100', 'Nishimoto']
+    # datasets = ['MDTB', 'HCPur100', 'Nishimoto']
+    #
+    # for dataset in datasets:
+    #     START_A2_gse_decomposition(dataset_name=dataset)
 
-    for dataset in datasets:
-        START_A2_gse_decomposition(dataset_name=dataset)
+    START_A2_gse_decomposition('Nishimoto')

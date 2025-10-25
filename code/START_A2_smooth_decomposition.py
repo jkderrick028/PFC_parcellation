@@ -40,7 +40,11 @@ def START_A2_smooth_decomposition(dataset_name):
         dataset_obj_individuals = original_data['dataset_obj_individuals']
 
     part_vec = list(info_individuals['half'])
-    cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+    # cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+    if dataset_name == 'Nishimoto':
+        cond_vec = list(info_individuals['cond_num'])
+    else:
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
 
     X_individuals[np.where(np.isnan(X_individuals))] = 0
 
