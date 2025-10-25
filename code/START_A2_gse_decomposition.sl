@@ -8,9 +8,7 @@
 #SBATCH --mail-type=ALL
 #SBATCH --output=slurm_outputs/%x_%A.out
 
-module unload singularity/3.8
-module load singularity/3.8
-module load apptainer/1.1
+module load StdEnv/2020  gcc/9.3.0
 
 source ~/pfc_parcellation/bin/activate
 
