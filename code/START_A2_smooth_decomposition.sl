@@ -15,4 +15,4 @@ export PATH=$PATH:~/projects/def-mmur/jxiang27/toolkits/workbench/bin_rh_linux64
 
 source ~/pfc_parcellation/bin/activate
 
-python START_A2_smooth_decomposition.py 'HCPur100'
+python START_A2_smooth_decomposition.py 'Nishimoto'
