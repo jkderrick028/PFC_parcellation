@@ -1,4 +1,4 @@
-import os.path, pickle, subprocess
+import os.path, pickle, subprocess, sys
 import numpy as np
 import Functional_Fusion.atlas_map as am
 import nibabel as nib
@@ -127,7 +127,10 @@ def START_A2_smooth_decomposition(dataset_name):
 
 
 if __name__=='__main__':
-    datasets = ['MDTB', 'HCPur100', 'Nishimoto']
+    # datasets = ['MDTB', 'HCPur100', 'Nishimoto']
+    #
+    # for dataset in datasets:
+    #     START_A2_smooth_decomposition(dataset_name=dataset)
 
-    for dataset in datasets:
-        START_A2_smooth_decomposition(dataset_name=dataset)
+    if len(sys.argv) > 1:
+        START_A2_smooth_decomposition(sys.argv[1])
