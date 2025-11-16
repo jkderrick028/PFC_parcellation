@@ -24,10 +24,11 @@ def run_bayes_parcellation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
+    atlas_name = 'yeo17'
 
     strength = 20.0
 
-    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}')
+    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}', atlas_name)
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
 
@@ -37,7 +38,7 @@ def run_bayes_parcellation(ROI):
     output = {}
 
     ## loading MDTB data
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s1.pkl')
+    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondAll_ses-s1.pkl')
     with open(PKL_data, 'rb') as pf:
         original_data = pickle.load(pf)
         data = original_data['X_individuals']
@@ -53,7 +54,8 @@ def run_bayes_parcellation(ROI):
     atlas, ainf = am.get_atlas(atlas_str)
 
     # Sample the probabilistic atlas at the specific atlas grayordinates
-    atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]
+    # atlas_fname = [os.path.join(surface_helpers_dir, 'glasser.L.label.gii'), os.path.join(surface_helpers_dir, 'glasser.R.label.gii')]    # glasser atlas
+    atlas_fname = [os.path.join(surface_helpers_dir, f'{atlas_name}.L.label.gii'), os.path.join(surface_helpers_dir, f'{atlas_name}.R.label.gii')]
     U = atlas.read_data(atlas_fname)
 
     n_vertices_whole_cortex = len(U)
