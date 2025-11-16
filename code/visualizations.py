@@ -18,8 +18,8 @@ border_LR = os.path.join(surface_helpers_dir, 'fs_LR.32k.L.border')
 atlas_str = 'fs32k'
 atlas, ainf = am.get_atlas(atlas_str)
 
-def plot_flatmap_labels(label, hemi, frame=None, borders=True):
-    lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, 'atl-glasser.lut'))
+def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser'):
+    lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, f'atl-{atlas}.lut'))
 
     if hemi == 'L':
         # left cortex
