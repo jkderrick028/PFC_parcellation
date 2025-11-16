@@ -5,7 +5,7 @@ from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
 from scipy.stats import ttest_ind, ttest_1samp
 from evaluations import *
-from Functional_Fusion.dataset import flat2ndarray
+from Functional_Fusion.reliability import flat2ndarray
 
 
 """
@@ -27,10 +27,11 @@ def run_parcellation_evaluation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
+    atlas_name = 'yeo17'
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
-    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}')
+    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}', atlas_name)
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
 
@@ -42,7 +43,7 @@ def run_parcellation_evaluation(ROI):
         PKL_output = os.path.join(resultsPath, f'output_{ROI}.pkl')
 
     ## loading MDTB data
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
+    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondAll_ses-s2.pkl')
     with open(PKL_data, 'rb') as pf:
         original_data = pickle.load(pf)
         X_individuals = original_data['X_individuals']
@@ -54,7 +55,7 @@ def run_parcellation_evaluation(ROI):
     ## loading individualized parcellation and glasser group parcellation
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
-    PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', f'output_{ROI}.pkl')
+    PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', atlas_name, f'output_{ROI}.pkl')
     with open(PKL_individualized_parcellation, 'rb') as pf:
         output_indiv = pickle.load(pf)
 
@@ -116,7 +117,7 @@ def run_parcellation_evaluation(ROI):
     # Create a DCBC evaluation object of the desired evaluation parameters(left hemisphere)
     if cv:
         ## loading MDTB data
-        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
         with open(PKL_data, 'rb') as pf:
             original_data = pickle.load(pf)
             X_individuals = original_data['X_individuals']
