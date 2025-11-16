@@ -146,10 +146,10 @@ def run_bayes_parcellation(ROI):
     plt.figure()
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(group_parcellation.reshape(1, -1)))
     plt.subplot(1, 2, 1)
-    plot_flatmap_labels(label_L, 'L', atlas=atlas)
+    plot_flatmap_labels(label_L, 'L', atlas=atlas_name)
 
     plt.subplot(1, 2, 2)
-    plot_flatmap_labels(label_R, 'R', atlas=atlas)
+    plot_flatmap_labels(label_R, 'R', atlas=atlas_name)
 
     plt.suptitle('group')
     plt.tight_layout()
@@ -162,9 +162,9 @@ def run_bayes_parcellation(ROI):
         plt.clf()
         [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(indiv_parcellation[i].reshape(1, -1)))
         plt.subplot(1, 2, 1)
-        plot_flatmap_labels(label_L, 'L', atlas=atlas)
+        plot_flatmap_labels(label_L, 'L', atlas=atlas_name)
         plt.subplot(1, 2, 2)
-        plot_flatmap_labels(label_R, 'R', atlas=atlas)
+        plot_flatmap_labels(label_R, 'R', atlas=atlas_name)
         plt.suptitle(f'subject {s}')
         plt.tight_layout()
 
