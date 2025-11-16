@@ -90,7 +90,7 @@ def run_parcellation_evaluation(ROI):
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
-    glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
+    glasser_L = os.path.join(surface_helpers_dir, f'{atlas_name}.L.label.gii')
 
     # extract the first data array as the parcels
     # make sure that the input parcels are of shape (N,)
@@ -214,7 +214,7 @@ def run_parcellation_evaluation(ROI):
     plt.xticks([1, 2], labels=['group', 'indiv'])
     plt.xlabel('atlas type')
     plt.ylabel('dcbc')
-    plt.title('DCBC using glasser and indiv atlas')
+    plt.title(f'DCBC using {atlas_name} and indiv atlas')
     if cv:
         JPG_fig = os.path.join(resultsPath, f'DCBC_scatter_{ROI}_cv.jpg')
     else:
