@@ -8,7 +8,7 @@ import DCBC.dcbc as DCBC
 from scipy.stats import ttest_1samp
 from nitools.cifti import surf_from_cifti
 from visualizations import *
-from Functional_Fusion.dataset import flat2ndarray
+from Functional_Fusion.reliability import flat2ndarray
 
 """
 This script computes the DCBC for each pair of parcels in PFC on individualized atlas (data only). 
@@ -28,6 +28,7 @@ def run_pairwise_dcbc(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB'   # or Demand
+    atlas_name = 'yeo17'
     cv = False              # we use cross-validated DCBC
     bin_width = 5           # mm
 
@@ -35,14 +36,14 @@ def run_pairwise_dcbc(ROI):
     atlas_str = 'fs32k'
     atlas, ainf = am.get_atlas(atlas_str)
 
-    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}')
+    resultsPath = os.path.join(mainResultsPath, os.path.basename(__file__).replace('.py', ''), f'{dataset_name}', atlas_name)
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
 
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
     ## loading individualized parcellation
-    PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', f'output_{ROI}.pkl')
+    PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', atlas_name, f'output_{ROI}.pkl')
     with open(PKL_individualized_parcellation, 'rb') as pf:
         output_indiv = pickle.load(pf)
 
