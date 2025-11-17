@@ -40,7 +40,7 @@ def run_pairwise_dcbc(ROI):
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
 
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
+    # included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
     ## loading individualized parcellation
     PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', atlas_name, f'output_{ROI}.pkl')
@@ -52,6 +52,8 @@ def run_pairwise_dcbc(ROI):
 
         labels_in_glasser = output_indiv['labels_in_glasser']
         parcel_names_in_glasser = output_indiv['parcel_names_in_glasser']
+
+        included_vtx_inds_L = output_indiv['included_vtx_inds_L']
 
     parcels_ROI = get_roi_pacels(ROI)
     n_parcels = len(parcels_ROI)

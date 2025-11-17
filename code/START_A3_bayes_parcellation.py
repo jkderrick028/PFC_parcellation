@@ -69,18 +69,28 @@ def run_bayes_parcellation(ROI):
         included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
     # for glasser atlas, included_vtx_inds_LR does not include 0 any more. However, for other atlases, such as the yeo17 atlas, there could still be 0 label.
-    labels_relative = U[included_vtx_inds_LR]
     if atlas_name == 'yeo17':
         if ROI == 'somatosensory':
-            vtx_0_label = included_vtx_inds_LR[np.logical_or(labels_relative == 0, labels_relative == 7)]
+            vtx_0_label_LR = included_vtx_inds_LR[np.isin(U[included_vtx_inds_LR], [0, 7])]
+            vtx_0_label_L = included_vtx_inds_L[np.isin(U[included_vtx_inds_L], [0, 7])]
+            vtx_0_label_R = included_vtx_inds_R[np.isin(U[included_vtx_inds_R], [0, 7])]
         elif ROI == 'PFC':
-            vtx_0_label = included_vtx_inds_LR[np.isin(labels_relative, [0, 6, 11])]
+            vtx_0_label_LR = included_vtx_inds_LR[np.isin(U[included_vtx_inds_LR], [0, 6, 11])]
+            vtx_0_label_L = included_vtx_inds_L[np.isin(U[included_vtx_inds_L], [0, 6, 11])]
+            vtx_0_label_R = included_vtx_inds_R[np.isin(U[included_vtx_inds_R], [0, 6, 11])]
         elif ROI == 'parietal':
-            vtx_0_label = included_vtx_inds_LR[np.isin(labels_relative, [0, 16])]
+            vtx_0_label_LR = included_vtx_inds_LR[np.isin(U[included_vtx_inds_LR], [0, 16])]
+            vtx_0_label_L = included_vtx_inds_L[np.isin(U[included_vtx_inds_L], [0, 16])]
+            vtx_0_label_R = included_vtx_inds_R[np.isin(U[included_vtx_inds_R], [0, 16])]
         else:
-            vtx_0_label = included_vtx_inds_LR[labels_relative==0]
-        included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label)]
-        excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label])
+            vtx_0_label_LR = included_vtx_inds_LR[np.isin(U[included_vtx_inds_LR], [0])]
+            vtx_0_label_L = included_vtx_inds_L[np.isin(U[included_vtx_inds_L], [0])]
+            vtx_0_label_R = included_vtx_inds_R[np.isin(U[included_vtx_inds_R], [0])]
+
+        included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label_LR)]
+        included_vtx_inds_L = included_vtx_inds_L[~np.isin(included_vtx_inds_L, vtx_0_label_L)]
+        included_vtx_inds_R = included_vtx_inds_R[~np.isin(included_vtx_inds_R, vtx_0_label_R)]
+        excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label_LR])
         labels_relative = U[included_vtx_inds_LR]
 
     data = data[:, :, included_vtx_inds_LR]
@@ -151,6 +161,10 @@ def run_bayes_parcellation(ROI):
     output['labels_in_glasser'] = labels_in_glasser
     output['parcel_names_in_glasser'] = parcel_names_in_glasser
     output['V'] = M.emissions[0].V.numpy()
+    output['included_vtx_inds_LR'] = included_vtx_inds_LR
+    output['included_vtx_inds_L'] = included_vtx_inds_L
+    output['included_vtx_inds_R'] = included_vtx_inds_R
+    output['excluded_vtx_inds_LR'] = excluded_vtx_inds_LR
     # output['M'] = M
     # output['theta'] = theta
 
