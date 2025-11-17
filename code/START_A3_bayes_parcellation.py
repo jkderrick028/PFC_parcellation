@@ -71,7 +71,10 @@ def run_bayes_parcellation(ROI):
     # for glasser atlas, included_vtx_inds_LR does not include 0 any more. However, for other atlases, such as the yeo17 atlas, there could still be 0 label.
     labels_relative = U[included_vtx_inds_LR]
     if atlas_name == 'yeo17':
-        vtx_0_label = included_vtx_inds_LR[labels_relative==0]
+        if ROI == 'somatosensory':
+            vtx_0_label = included_vtx_inds_LR[np.logical_or(labels_relative == 0, labels_relative == 7)]
+        else:
+            vtx_0_label = included_vtx_inds_LR[labels_relative==0]
         included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label)]
         excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label])
         labels_relative = U[included_vtx_inds_LR]
@@ -191,7 +194,7 @@ def run_bayes_parcellation(ROI):
 
 
 if __name__=='__main__':
-    ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
+    ROIs = ['somatosensory', 'PFC', 'visual', 'parietal']
 
     for roi in ROIs:
         run_bayes_parcellation(roi)
