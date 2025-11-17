@@ -65,7 +65,7 @@ def run_pairwise_dcbc(ROI):
 
     if cv:
         ## loading MDTB data
-        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
         with open(PKL_data, 'rb') as pf:
             original_data = pickle.load(pf)
             X_individuals = original_data['X_individuals']
@@ -82,7 +82,7 @@ def run_pairwise_dcbc(ROI):
 
     else:
         ## loading MDTB dataset
-        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_All_ses-s2.pkl')
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondAll_ses-s2.pkl')
         with open(PKL_data, 'rb') as pf:
             original_data = pickle.load(pf)
             X_individuals = original_data['X_individuals']
