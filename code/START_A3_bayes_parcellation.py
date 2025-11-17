@@ -73,6 +73,10 @@ def run_bayes_parcellation(ROI):
     if atlas_name == 'yeo17':
         if ROI == 'somatosensory':
             vtx_0_label = included_vtx_inds_LR[np.logical_or(labels_relative == 0, labels_relative == 7)]
+        elif ROI == 'PFC':
+            vtx_0_label = included_vtx_inds_LR[np.isin(labels_relative, [0, 6, 11])]
+        elif ROI == 'parietal':
+            vtx_0_label = included_vtx_inds_LR[np.isin(labels_relative, [0, 16])]
         else:
             vtx_0_label = included_vtx_inds_LR[labels_relative==0]
         included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label)]
@@ -194,7 +198,7 @@ def run_bayes_parcellation(ROI):
 
 
 if __name__=='__main__':
-    ROIs = ['somatosensory', 'PFC', 'visual', 'parietal']
+    ROIs = ['parietal', 'visual', 'PFC', 'somatosensory']
 
     for roi in ROIs:
         run_bayes_parcellation(roi)
