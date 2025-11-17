@@ -25,6 +25,7 @@ def run_bayes_parcellation(ROI):
 
     dataset_name = 'MDTB' # or Demand
     atlas_name = 'yeo17'
+    # atlas_name = 'glasser'
 
     strength = 20.0
 
@@ -67,8 +68,16 @@ def run_bayes_parcellation(ROI):
     else:
         included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
-    data = data[:, :, included_vtx_inds_LR]
+    # for glasser atlas, included_vtx_inds_LR does not include 0 any more. However, for other atlases, such as the yeo17 atlas, there could still be 0 label.
     labels_relative = U[included_vtx_inds_LR]
+    if atlas_name == 'yeo17':
+        vtx_0_label = included_vtx_inds_LR[labels_relative==0]
+        included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label)]
+        excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label])
+        labels_relative = U[included_vtx_inds_LR]
+
+    data = data[:, :, included_vtx_inds_LR]
+
     n_subjects = data.shape[0]
 
     ## converting the hard parcellation into a probabilistic one
