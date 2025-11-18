@@ -11,4 +11,4 @@
 source ~/pfc_parcellation/bin/activate
 
 python START_A4_parcellation_evaluation.py
-python START_A4_DCBC_pairwise.py 
+python START_A4_DCBC_pairwise_yeo17.py
