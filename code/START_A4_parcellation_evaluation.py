@@ -53,7 +53,7 @@ def run_parcellation_evaluation(ROI):
     n_subjects = X_individuals.shape[0]
 
     ## loading individualized parcellation and glasser group parcellation
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
+    # included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
     PKL_individualized_parcellation = os.path.join(projectPath, 'results', 'START_A3_bayes_parcellation', f'{dataset_name}', atlas_name, f'output_{ROI}.pkl')
     with open(PKL_individualized_parcellation, 'rb') as pf:
@@ -64,6 +64,9 @@ def run_parcellation_evaluation(ROI):
 
         U_group = output_indiv['U_group']
         group_parcellation = output_indiv['group_parcellation']
+
+        included_vtx_inds_LR = output_indiv['included_vtx_inds_LR']
+        included_vtx_inds_L = output_indiv['included_vtx_inds_L']
 
     U_group = np.tile(U_group, (n_subjects, 1, 1))
 
@@ -101,12 +104,37 @@ def run_parcellation_evaluation(ROI):
     dict_parcel_indices = get_glasser_labels()  # {parcel: label}
     indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
 
+    # for alternative atlas
+    if atlas_name != 'glasser':
+        alternative_atlas_L = os.path.join(surface_helpers_dir, f'{atlas_name}.L.label.gii')
+        parcels_inds_alt = nib.load(alternative_atlas_L).darrays[0].data
+
     # get all the vertices that are in the ROI list
     vertex_label_ROI, vertex_ind_ROI = [], []
     for i, label in enumerate(parcels_inds):
         if label in indices_ROI:
-            vertex_label_ROI.append(label)
-            vertex_ind_ROI.append(i)
+            # vertex_label_ROI.append(label)
+            # vertex_ind_ROI.append(i)
+
+            if atlas_name == 'yeo17':
+                if ROI == 'PFC':
+                    if parcels_inds_alt[i] in [0, 6, 11]:
+                        continue
+                elif ROI == 'somatosensory':
+                    if parcels_inds_alt[i] in [0, 7]:
+                        continue
+                elif ROI == 'visual':
+                    if parcels_inds_alt[i] in [0]:
+                        continue
+                elif ROI == 'parietal':
+                    if parcels_inds_alt[i] in [0, 16]:
+                        continue
+                vertex_label_ROI.append(parcels_inds_alt[i])
+                vertex_ind_ROI.append(i)
+
+            elif atlas_name == 'glasser':
+                vertex_label_ROI.append(label)
+                vertex_ind_ROI.append(i)
 
     vertex_label_ROI = np.array(vertex_label_ROI)
     vertex_ind_ROI = np.array(vertex_ind_ROI)
