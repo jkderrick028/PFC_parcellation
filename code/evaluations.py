@@ -4,6 +4,7 @@ import DCBC.dcbc as DCBC
 from DCBC.utilities import compute_var_cov
 import torch as pt
 import scipy as sp
+from scipy.optimize import curve_fit
 
 
 # def spatial_ACF_cv(maxDist=35, binWidth=1, func=None, dist=None):
@@ -68,6 +69,11 @@ import scipy as sp
 #     return D
 
 
+def laplacian_pdf(x, b):
+
+    return np.exp(-x/b)
+
+
 def spatial_ACF_cv(maxDist=35, binWidth=1, func=None, dist=None):
     """
     cross-validated spatial ACF
@@ -121,6 +127,58 @@ def spatial_ACF_cv(maxDist=35, binWidth=1, func=None, dist=None):
         "binWidth": binWidth,
         "maxDist": maxDist,
         "nums": nums,
+        "corrs": corrs,
+        "dists": dists
+    }
+
+    return D
+
+
+
+def spatial_ACF_per_voxel_cv(maxDist=35, binWidth=1, func=None, dist=None):
+    """
+    cross-validated spatial ACF for each voxel, estimate a FWHM for each voxel
+
+    Args:
+        maxDist: The maximum distance for vertices pairs, default 35 mm
+        binWidth: The spatial binning width in mm, default 1 mm
+        func: the functional data for evaluating, shape (N, P),
+              N - the dimensionality of underlying data, i.e. the number
+              of task contrasts or the number of resting-state networks
+              P - the number of brain voxels / vertices
+              Note: if cv is True, func is of shape (R, N, P) where R
+              is the number of runs or partitions
+        dist: the pairwise distance matrix between P brain locations. It
+              can be a dense matrix or sparse tensor
+
+    Returns:
+        D: a dictionary contains necessary information for DCBC analysis
+    """
+    numBins = int(np.floor(maxDist / binWidth))
+    cov, var = compute_var_cov(func, backend='numpy', cv=True)
+
+    P = cov.shape[0]
+    corrs = np.zeros((P, numBins+1))
+    FWHMs = []
+    dists = np.arange(0, maxDist + 0.5, binWidth)
+
+    for p in np.arange(P):
+        # at distance 0
+        corrs[p, 0] = 1
+        for i in np.arange(numBins):
+            inBin = np.where((dist[p] > i * binWidth) & (dist[p] <= (i + 1) * binWidth))[0]
+            this_corr = (np.nanmean(cov[p, inBin]) / np.nanmean(var[p, inBin]))
+            corrs[p, i+1] = this_corr
+        params, params_cov = curve_fit(laplacian_pdf, dists, corrs[p], nan_policy='omit')
+        FWHMs.append(params[0])
+
+    FWHMs = np.array(FWHMs)
+    FWHMs = 2 * FWHMs * np.log(2)
+
+    D = {
+        "binWidth": binWidth,
+        "maxDist": maxDist,
+        "FWHMs": FWHMs,
         "corrs": corrs,
         "dists": dists
     }
