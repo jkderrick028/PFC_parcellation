@@ -27,7 +27,8 @@ def run_parcellation_evaluation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
-    atlas_name = 'yeo17'
+    atlas_name = 'glasser'
+    # atlas_name = 'yeo17'
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 

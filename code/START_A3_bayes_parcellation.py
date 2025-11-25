@@ -91,18 +91,24 @@ def run_bayes_parcellation(ROI):
         included_vtx_inds_L = included_vtx_inds_L[~np.isin(included_vtx_inds_L, vtx_0_label_L)]
         included_vtx_inds_R = included_vtx_inds_R[~np.isin(included_vtx_inds_R, vtx_0_label_R)]
         excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label_LR])
-        labels_relative = U[included_vtx_inds_LR]
 
+
+    labels_relative = U[included_vtx_inds_LR]
     data = data[:, :, included_vtx_inds_LR]
 
     n_subjects = data.shape[0]
 
     ## converting the hard parcellation into a probabilistic one
-    labels_in_glasser, labels_relative = np.unique(labels_relative, return_inverse=True)    # labels_in_glasser is a list of labels of parcels of interest in glasser parcellation, starting from 1
-    parcel_names = get_roi_pacels('whole_cortex')
-    parcel_names_in_glasser = [parcel_names[k-1] for k in labels_in_glasser]
+    labels_in_group, labels_relative = np.unique(labels_relative, return_inverse=True)    # labels_in_group is a list of labels of parcels of interest in glasser parcellation, starting from 1
+    if atlas_name == 'glasser':
+        parcel_names = get_roi_pacels('whole_cortex')
+        parcel_names_in_group = [parcel_names[k - 1] for k in labels_in_group]
+    elif atlas_name == 'yeo17':
+        parcel_names = [f'{x}' for x in labels_in_group]
+        parcel_names_in_group = parcel_names
+
     ## K is the number of parcels
-    K = len(labels_in_glasser)
+    K = len(labels_in_group)
 
     logpi = ar.expand_mn_1d(labels_relative, K) * strength
     U_roi = torch.softmax(logpi, dim=0)
@@ -150,7 +156,7 @@ def run_bayes_parcellation(ROI):
 
     ## derive the individualized parcellation from the U_individual using winnder-take-all
     ## indiv_parcellation (n_subjects x n_vertices in whole cortex)
-    indiv_parcellation = convert_prob_atlas_to_absolute_labels(U_individual, labels_in_glasser, excluded_vtx_inds_LR, inds_U_zero)
+    indiv_parcellation = convert_prob_atlas_to_absolute_labels(U_individual, labels_in_group, excluded_vtx_inds_LR, inds_U_zero)
 
     # saving U and U_indiv
     output['U_group'] = U_group
@@ -158,8 +164,8 @@ def run_bayes_parcellation(ROI):
     output['U_individual'] = U_individual
     output['indiv_parcellation'] = indiv_parcellation
     output['ll'] = ll
-    output['labels_in_glasser'] = labels_in_glasser
-    output['parcel_names_in_glasser'] = parcel_names_in_glasser
+    output['labels_in_group'] = labels_in_group
+    output['parcel_names_in_group'] = parcel_names_in_group
     output['V'] = M.emissions[0].V.numpy()
     output['included_vtx_inds_LR'] = included_vtx_inds_LR
     output['included_vtx_inds_L'] = included_vtx_inds_L
