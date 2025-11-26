@@ -61,17 +61,29 @@ def START_A2_gse_decomposition(dataset_name):
     # fill nans with 0
     X_individuals[np.isnan(X_individuals)] = 0
 
+    # in case rest is not explicitly coded as a condition
+    if dataset_name in ['HCPur100', 'Demand']:
+        n_parts = len(np.unique(part_vec))
+        for i in np.arange(n_parts):
+            part_vec.append(i+1)
+            cond_vec.append(0)
+
+        n_sub, n_cond, n_vert = X_individuals.shape
+        X_individuals_ext = np.zeros((n_sub, n_cond+n_parts, n_vert))
+        X_individuals_ext[:, 0:n_cond, :] = X_individuals
+        X_individuals = X_individuals_ext
+
     ## voxel-wise decomposition for the whole cortex: make a flatmap for the entire cortex (vs/(vs+vg))
     criterion = 'global'
-    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate='none')
+    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate='none', subtract_mean=True)
     output['whole_cortex'][criterion] = variances
 
     criterion = 'voxel_wise'
-    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion)
+    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion, subtract_mean=True)
     output['whole_cortex'][criterion] = variances
 
     criterion = 'condition_wise'
-    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion)
+    variances = decompose_subj_group(X_individuals, cond_vec, part_vec, separate=criterion, subtract_mean=True)
     output['whole_cortex'][criterion] = variances
 
 
@@ -93,6 +105,9 @@ def START_A2_gse_decomposition(dataset_name):
 
     ## whole cortex
     data = flat2ndarray(X_individuals, part_vec, cond_vec)
+
+    ## subtracting out the mean across conditions
+    data = data - data.mean(axis=2)
 
     n_bootstraps = 100
     n_subjects, n_partitions, n_conditions, n_voxels = data.shape
@@ -212,6 +227,6 @@ if __name__=='__main__':
     try:
         START_A2_gse_decomposition(sys.argv[1])
     except:
-        START_A2_gse_decomposition('Demand')
+        START_A2_gse_decomposition('HCPur100')
 
 
