@@ -1,4 +1,4 @@
-import os.path, pickle
+import os.path, pickle, sys
 import numpy as np
 import Functional_Fusion.atlas_map as am
 import Functional_Fusion.dataset as ds
@@ -203,9 +203,15 @@ def START_A2_gse_decomposition(dataset_name):
 
 
 if __name__=='__main__':
-    # datasets = ['MDTB', 'HCPur100', 'Nishimoto']
+    # datasets = ['MDTB', 'HCPur100', 'Nishimoto', 'Language', 'Demand']
     #
     # for dataset in datasets:
     #     START_A2_gse_decomposition(dataset_name=dataset)
 
-    START_A2_gse_decomposition('Nishimoto')
+    # START_A2_gse_decomposition('Demand')
+    try:
+        START_A2_gse_decomposition(sys.argv[1])
+    except:
+        START_A2_gse_decomposition('Demand')
+
+

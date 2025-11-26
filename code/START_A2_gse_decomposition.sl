@@ -12,4 +12,6 @@ module load StdEnv/2020  gcc/9.3.0
 
 source ~/pfc_parcellation/bin/activate
 
-python START_A2_gse_decomposition.py
+python START_A2_gse_decomposition.py 'Demand'
+python START_A2_gse_decomposition.py 'Language'
+
