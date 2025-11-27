@@ -107,7 +107,7 @@ def START_A2_gse_decomposition(dataset_name):
     data = flat2ndarray(X_individuals, part_vec, cond_vec)
 
     ## subtracting out the mean across conditions
-    data = data - data.mean(axis=2)
+    data = data - data.mean(axis=2, keepdims=True)
 
     n_bootstraps = 100
     n_subjects, n_partitions, n_conditions, n_voxels = data.shape
