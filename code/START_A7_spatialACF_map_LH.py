@@ -1,4 +1,4 @@
-import os.path, pickle, scipy
+import os.path, pickle, scipy, sys
 import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
@@ -8,9 +8,9 @@ from evaluations import *
 from Functional_Fusion.reliability import flat2ndarray
 
 
-def compute_spatial_ACF(ROI):
+def compute_spatial_ACF(dataset_name='MDTB'):
     """
-    computing cross-validated spatial ACF, for selected ROI
+    computing cross-validated spatial ACF, for the entire left hemisphere
     Args:
         ROI: str
 
@@ -18,7 +18,7 @@ def compute_spatial_ACF(ROI):
     ## defining paths
     projectPath, mainResultsPath = setProjectPath()
 
-    dataset_name = 'MDTB' # or Demand
+    # dataset_name = 'MDTB' # or Demand
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -27,10 +27,10 @@ def compute_spatial_ACF(ROI):
         os.makedirs(resultsPath)
 
     output = dict()
-    PKL_output = os.path.join(resultsPath, f'output_{ROI}_cv.pkl')
+    PKL_output = os.path.join(resultsPath, f'output_LH_cv.pkl')
 
     ## loading individualized parcellation and glasser group parcellation
-    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
+    included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
 
     ## loading MDTB data
     PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
@@ -48,7 +48,6 @@ def compute_spatial_ACF(ROI):
     cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
     data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
 
-    ## DCBC using left hemisphere only
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
@@ -59,14 +58,11 @@ def compute_spatial_ACF(ROI):
     gii_file = nib.load(glasser_L)
 
     parcels_inds = gii_file.darrays[0].data
-    parcels_ROI = get_roi_pacels(ROI)
-    dict_parcel_indices = get_glasser_labels()  # {parcel: label}
-    indices_ROI = [dict_parcel_indices[k] for k in parcels_ROI]
 
     # get all the vertices that are in the ROI list
     vertex_label_ROI, vertex_ind_ROI = [], []
     for i, label in enumerate(parcels_inds):
-        if label in indices_ROI:
+        if label not in [0]:
             vertex_label_ROI.append(label)
             vertex_ind_ROI.append(i)
 
@@ -92,8 +88,9 @@ def compute_spatial_ACF(ROI):
 
 
 if __name__=='__main__':
-    ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
+    try:
+        dataset_name = sys.argv[1]
+    except:
+        dataset_name = 'MDTB'
 
-    for roi in ROIs:
-        compute_spatial_ACF(roi)
-
+    compute_spatial_ACF(dataset_name=dataset_name)

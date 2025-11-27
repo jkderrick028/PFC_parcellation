@@ -167,7 +167,9 @@ def spatial_ACF_per_voxel_cv(maxDist=35, binWidth=1, func=None, dist=None):
         corrs[p, 0] = 1
         for i in np.arange(numBins):
             inBin = np.where((dist[p] > i * binWidth) & (dist[p] <= (i + 1) * binWidth))[0]
-            this_corr = (np.nanmean(cov[p, inBin]) / np.nanmean(var[p, inBin]))
+            cov_ = cov[p, inBin]
+            var_ = var[p, inBin]
+            this_corr = np.nanmean(cov_[~np.isnan(var_)]) / np.nanmean(var[p, inBin])
             corrs[p, i+1] = this_corr
         params, params_cov = curve_fit(laplacian_pdf, dists, corrs[p], nan_policy='omit')
         FWHMs.append(params[0])
