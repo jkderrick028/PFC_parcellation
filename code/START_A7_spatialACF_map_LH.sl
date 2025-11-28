@@ -2,7 +2,7 @@
 #SBATCH --job-name=START_A7_spatialACF_map_LH
 #SBATCH --account=def-hallett-ab
 #SBATCH --time=0-3:59
-#SBATCH --cpus-per-task=4
+#SBATCH --cpus-per-task=3
 #SBATCH --mem-per-cpu=16G
 #SBATCH --mail-user=jkderrick.jobscheduler@gmail.com
 #SBATCH --mail-type=ALL
