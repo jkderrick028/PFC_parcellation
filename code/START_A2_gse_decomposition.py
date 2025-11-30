@@ -218,7 +218,7 @@ def START_A2_gse_decomposition(dataset_name):
 
 
 if __name__=='__main__':
-    # datasets = ['MDTB', 'HCPur100', 'Nishimoto', 'Language', 'Demand']
+    # datasets = ['MDTB', 'IBC', 'Language', 'Demand', 'HCPur100', 'Nishimoto']
     #
     # for dataset in datasets:
     #     START_A2_gse_decomposition(dataset_name=dataset)
@@ -227,6 +227,6 @@ if __name__=='__main__':
     try:
         START_A2_gse_decomposition(sys.argv[1])
     except:
-        START_A2_gse_decomposition('HCPur100')
+        START_A2_gse_decomposition('IBC')
 
 
