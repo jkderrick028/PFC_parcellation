@@ -62,7 +62,7 @@ def START_A2_gse_decomposition(dataset_name):
     X_individuals[np.isnan(X_individuals)] = 0
 
     # in case rest is not explicitly coded as a condition
-    if dataset_name in ['HCPur100', 'Demand']:
+    if dataset_name in ['HCPur100', 'Demand', 'IBC']:
         n_parts = len(np.unique(part_vec))
         for i in np.arange(n_parts):
             part_vec.append(i+1)
