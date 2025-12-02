@@ -134,7 +134,7 @@ def get_glasser_labels():
     return dict_parcel_indices
 
 
-def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_inds_LR, inds_U_zero):
+def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_inds_LR, inds_U_zero, over_label=181):
     """
     This function converts a probabilistic atlas to a hard parcellation, where each vertex is assigned a label, using the absolute label corresponding to the glasser parcellation
 
@@ -147,6 +147,8 @@ def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_ind
                 specifying the indices of vertices that fall out of the ROI
         inds_U_zero: np.ndarray (boolean)
                 indicating where the 0's are out of the 59518 vertices. 0's can only be part of the excluded_vtx_inds_LR
+        over_label: int
+                the label for out of range vertices. for glasser, it's 181. for schaefer100, it's 101
     Returns:
         U_labels:           np.ndarray (n_subjects x 59518)
     """
@@ -178,7 +180,8 @@ def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_ind
         U_labels.append(labels_in_glasser[relative_labels[subjI]])
 
     U_labels = np.array(U_labels)
-    U_labels[:, excluded_vtx_inds_LR] = 181
+    # U_labels[:, excluded_vtx_inds_LR] = 181
+    U_labels[:, excluded_vtx_inds_LR] = over_label
     U_labels[:, inds_U_zero] = 0
 
     return U_labels

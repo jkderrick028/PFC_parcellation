@@ -169,7 +169,7 @@ def run_bayes_parcellation(ROI):
 
     ## derive the individualized parcellation from the U_individual using winnder-take-all
     ## indiv_parcellation (n_subjects x n_vertices in whole cortex)
-    indiv_parcellation = convert_prob_atlas_to_absolute_labels(U_individual, labels_in_group, excluded_vtx_inds_LR, inds_U_zero)
+    indiv_parcellation = convert_prob_atlas_to_absolute_labels(U_individual, labels_in_group, excluded_vtx_inds_LR, inds_U_zero, over_label=np.max(group_parcellation))
 
     # saving U and U_indiv
     output['U_group'] = U_group
