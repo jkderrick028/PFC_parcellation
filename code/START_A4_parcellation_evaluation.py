@@ -27,7 +27,8 @@ def run_parcellation_evaluation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
-    atlas_name = 'glasser'
+    # atlas_name = 'glasser'
+    atlas_name = 'schaefer100'
     # atlas_name = 'yeo17'
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
@@ -135,6 +136,12 @@ def run_parcellation_evaluation(ROI):
 
             elif atlas_name == 'glasser':
                 vertex_label_ROI.append(label)
+                vertex_ind_ROI.append(i)
+
+            elif atlas_name == 'schaefer100':
+                if parcels_inds_alt[i] in [0]:
+                        continue
+                vertex_label_ROI.append(parcels_inds_alt[i])
                 vertex_ind_ROI.append(i)
 
     vertex_label_ROI = np.array(vertex_label_ROI)

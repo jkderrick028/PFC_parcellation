@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=START_A4_DCBC_pairwise
+#SBATCH --job-name=START_A3_bayes_parcellation
 #SBATCH --account=def-hallett-ab
 #SBATCH --time=0-10:59
 #SBATCH --cpus-per-task=1
@@ -10,5 +10,5 @@
 
 source ~/pfc_parcellation/bin/activate
 
+python START_A3_bayes_parcellation.py
 python START_A4_parcellation_evaluation.py
-python START_A4_DCBC_pairwise_yeo17.py

@@ -24,7 +24,9 @@ def run_bayes_parcellation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
-    atlas_name = 'yeo17'
+
+    # atlas_name = 'yeo17'
+    atlas_name = 'schaefer100'
     # atlas_name = 'glasser'
 
     strength = 20.0
@@ -92,6 +94,16 @@ def run_bayes_parcellation(ROI):
         included_vtx_inds_R = included_vtx_inds_R[~np.isin(included_vtx_inds_R, vtx_0_label_R)]
         excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label_LR])
 
+    elif atlas_name == 'schaefer100':
+        vtx_0_label_LR = included_vtx_inds_LR[np.isin(U[included_vtx_inds_LR], [0])]
+        vtx_0_label_L = included_vtx_inds_L[np.isin(U[included_vtx_inds_L], [0])]
+        vtx_0_label_R = included_vtx_inds_R[np.isin(U[included_vtx_inds_R], [0])]
+
+        included_vtx_inds_LR = included_vtx_inds_LR[~np.isin(included_vtx_inds_LR, vtx_0_label_LR)]
+        included_vtx_inds_L = included_vtx_inds_L[~np.isin(included_vtx_inds_L, vtx_0_label_L)]
+        included_vtx_inds_R = included_vtx_inds_R[~np.isin(included_vtx_inds_R, vtx_0_label_R)]
+        excluded_vtx_inds_LR = np.concatenate([excluded_vtx_inds_LR, vtx_0_label_LR])
+
 
     labels_relative = U[included_vtx_inds_LR]
     data = data[:, :, included_vtx_inds_LR]
@@ -103,7 +115,7 @@ def run_bayes_parcellation(ROI):
     if atlas_name == 'glasser':
         parcel_names = get_roi_pacels('whole_cortex')
         parcel_names_in_group = [parcel_names[k - 1] for k in labels_in_group]
-    elif atlas_name == 'yeo17':
+    elif atlas_name in ['yeo17', 'schaefer100']:
         parcel_names = [f'{x}' for x in labels_in_group]
         parcel_names_in_group = parcel_names
 
@@ -146,7 +158,8 @@ def run_bayes_parcellation(ROI):
 
     ## group parcellation
     group_parcellation = U.copy()
-    group_parcellation[excluded_vtx_inds_LR] = 181
+    # group_parcellation[excluded_vtx_inds_LR] = 181
+    group_parcellation[excluded_vtx_inds_LR] = np.max(group_parcellation) + 1
     group_parcellation[inds_U_zero] = 0
 
     ## U_individual: the data likelihood, n_subjects x n_parcels x n_vertices in whole cortxe
@@ -218,7 +231,7 @@ def run_bayes_parcellation(ROI):
 
 
 if __name__=='__main__':
-    ROIs = ['parietal', 'visual', 'PFC', 'somatosensory']
+    ROIs = ['PFC', 'parietal', 'visual', 'somatosensory']
 
     for roi in ROIs:
         run_bayes_parcellation(roi)

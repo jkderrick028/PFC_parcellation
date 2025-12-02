@@ -21,9 +21,16 @@ atlas, ainf = am.get_atlas(atlas_str)
 def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser'):
     lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, f'atl-{atlas}.lut'))
 
+    if atlas == 'schaefer100':
+        cmap = cmap[np.arange(1, len(cmap), 2)] / 255
+        names = list(lid[np.arange(0, len(lid), 2)])
+
     if hemi == 'L':
         # left cortex
-        keep_inds = np.arange(int(cmap.shape[0]/2))
+        if atlas == 'schaefer100':
+            keep_inds = np.arange(len(cmap))
+        else:
+            keep_inds = np.arange(int(cmap.shape[0]/2))
         cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
 
         flatmap.plot(label.reshape(-1, ),
@@ -44,7 +51,10 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser'):
 
     else:
         # right cortex
-        keep_inds = np.arange(int(cmap.shape[0]/2), cmap.shape[0])
+        if atlas == 'schaefer100':
+            keep_inds = np.arange(len(cmap))
+        else:
+            keep_inds = np.arange(int(cmap.shape[0]/2), cmap.shape[0])
         cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
 
         flatmap.plot(label.reshape(-1, ),
