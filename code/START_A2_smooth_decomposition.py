@@ -48,6 +48,18 @@ def START_A2_smooth_decomposition(dataset_name):
 
     X_individuals[np.where(np.isnan(X_individuals))] = 0
 
+    # in case rest is not explicitly coded as a condition
+    if dataset_name in ['HCPur100', 'Demand', 'IBC']:
+        n_parts = len(np.unique(part_vec))
+        for i in np.arange(n_parts):
+            part_vec.append(i + 1)
+            cond_vec.append(0)
+
+        n_sub, n_cond, n_vert = X_individuals.shape
+        X_individuals_ext = np.zeros((n_sub, n_cond + n_parts, n_vert))
+        X_individuals_ext[:, 0:n_cond, :] = X_individuals
+        X_individuals = X_individuals_ext
+
     ## smoothing
     # save orig, no smoothing
     PKL_smoothed = os.path.join(resultsPath, f'smoothed_orig_mm.pkl')
