@@ -1,7 +1,7 @@
 #!/bin/bash -l
-#SBATCH --job-name=START_A3_bayes_parcellation
+#SBATCH --job-name=START_A4_DCBC_pairwise_resting
 #SBATCH --account=def-hallett-ab
-#SBATCH --time=0-10:59
+#SBATCH --time=0-23:59
 #SBATCH --cpus-per-task=1
 #SBATCH --mem-per-cpu=32G 
 #SBATCH --mail-user=jkderrick.jobscheduler@gmail.com
@@ -10,5 +10,4 @@
 
 source ~/pfc_parcellation/bin/activate
 
-python START_A3_bayes_parcellation.py
-python START_A4_parcellation_evaluation.py
+python START_A4_DCBC_pairwise_resting.py

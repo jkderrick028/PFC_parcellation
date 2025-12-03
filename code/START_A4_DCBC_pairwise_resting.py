@@ -28,7 +28,8 @@ def run_pairwise_dcbc(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB'   # or Demand
-    atlas_name = 'yeo17'
+    # atlas_name = 'yeo17'
+    atlas_name = 'schaefer100'
     cv = False              # we use cross-validated DCBC
     bin_width = 5           # mm
 
@@ -49,15 +50,15 @@ def run_pairwise_dcbc(ROI):
 
         indiv_parcellation = output_indiv['indiv_parcellation']
 
-        labels_in_glasser = output_indiv['labels_in_glasser']
+        labels_in_group = output_indiv['labels_in_group']
         if atlas_name == 'glasser':
             parcel_names_in_glasser = output_indiv['parcel_names_in_glasser']
-        elif atlas_name == 'yeo17':
-            parcel_names_in_glasser = [f'{x}' for x in labels_in_glasser]
+        elif atlas_name in ['yeo17', 'schaefer100']:
+            parcel_names_in_glasser = [f'{x}' for x in labels_in_group]
 
         included_vtx_inds_L = output_indiv['included_vtx_inds_L']
 
-    n_parcels = len(labels_in_glasser)
+    n_parcels = len(labels_in_group)
 
     output = dict()
     PKL_output = os.path.join(resultsPath, f'output_{ROI}.pkl')
@@ -113,7 +114,7 @@ def run_pairwise_dcbc(ROI):
                 label_L = label_L.flatten()
                 vertex_label_ROI, vertex_ind_ROI = [], []
                 for i, label in enumerate(label_L):
-                    if label in [labels_in_glasser[parI], labels_in_glasser[parJ]]:
+                    if label in [labels_in_group[parI], labels_in_group[parJ]]:
                         vertex_label_ROI.append(label)
                         vertex_ind_ROI.append(i)
 
@@ -124,7 +125,7 @@ def run_pairwise_dcbc(ROI):
                 spaMat = spaMat[:, vertex_ind_ROI]
 
                 # only keep the left hemisphere cortex
-                select_inds = [x for x in included_vtx_inds_L if indiv_parcellation[subjI, x] in [labels_in_glasser[parI], labels_in_glasser[parJ]]]
+                select_inds = [x for x in included_vtx_inds_L if indiv_parcellation[subjI, x] in [labels_in_group[parI], labels_in_group[parJ]]]
                 if cv:
                     data_dcbc = data[subjI]
                     data_dcbc = data_dcbc[:, :, select_inds]
