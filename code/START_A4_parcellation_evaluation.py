@@ -27,9 +27,10 @@ def run_parcellation_evaluation(ROI):
     projectPath, mainResultsPath = setProjectPath()
 
     dataset_name = 'MDTB' # or Demand
+
     # atlas_name = 'glasser'
-    atlas_name = 'schaefer100'
-    # atlas_name = 'yeo17'
+    # atlas_name = 'schaefer100'
+    atlas_name = 'yeo17'
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -95,7 +96,7 @@ def run_parcellation_evaluation(ROI):
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
-    glasser_L = os.path.join(surface_helpers_dir, f'{atlas_name}.L.label.gii')
+    glasser_L = os.path.join(surface_helpers_dir, f'glasser.L.label.gii')
 
     # extract the first data array as the parcels
     # make sure that the input parcels are of shape (N,)
