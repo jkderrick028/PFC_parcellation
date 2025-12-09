@@ -182,6 +182,6 @@ def convert_prob_atlas_to_absolute_labels(U, labels_in_glasser, excluded_vtx_ind
     U_labels = np.array(U_labels)
     # U_labels[:, excluded_vtx_inds_LR] = 181
     U_labels[:, excluded_vtx_inds_LR] = over_label
-    U_labels[:, inds_U_zero] = 0
+    U_labels[:, inds_U_zero] = over_label
 
     return U_labels
