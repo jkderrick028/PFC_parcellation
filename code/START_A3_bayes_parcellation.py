@@ -127,6 +127,7 @@ def run_bayes_parcellation(ROI):
 
     # Build the arrangement model - the parameters are the log-probabilities of the atlas
     ar_model = ar.build_arrangement_model(U_roi, prior_type='logpi', atlas=atlas)
+    # ar_model = ar.build_arrangement_model(U_roi, prior_type='logpi', atlas=atlas, sym_type='asym' if atlas_name in ['schaefer100'] else 'sym')
 
     # fit the emission model to the data
     # Make a design matrix
