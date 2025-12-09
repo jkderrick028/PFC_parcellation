@@ -120,10 +120,6 @@ def START_A2_gse_decomposition(dataset_name):
         output[ROIs[roiI]] = {}
         included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROIs[roiI])
 
-        criterion = 'subject_wise'
-        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
-        output[ROIs[roiI]][criterion] = variances 
-
         criterion = 'global'
         output[ROIs[roiI]][criterion] = []
 
@@ -131,6 +127,9 @@ def START_A2_gse_decomposition(dataset_name):
         data_roi = data[:, :, :, included_vtx_inds_LR]
         variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
         output[ROIs[roiI]][criterion].append(variances.flatten())
+
+        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion='subject_wise')
+        output[ROIs[roiI]]['subject_wise'] = variances
 
         for bootI in np.arange(n_bootstraps):
             data_roi = data[:, :, :, included_vtx_inds_LR]
@@ -231,6 +230,6 @@ if __name__=='__main__':
     try:
         START_A2_gse_decomposition(sys.argv[1])
     except:
-        START_A2_gse_decomposition('IBC')
+        START_A2_gse_decomposition('MDTB')
 
 
