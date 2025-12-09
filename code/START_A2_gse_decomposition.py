@@ -120,6 +120,10 @@ def START_A2_gse_decomposition(dataset_name):
         output[ROIs[roiI]] = {}
         included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROIs[roiI])
 
+        criterion = 'subject_wise'
+        variances = decompose_pattern_into_group_indiv_noise(data_roi, criterion=criterion)
+        output[ROIs[roiI]][criterion] = variances 
+
         criterion = 'global'
         output[ROIs[roiI]][criterion] = []
 
