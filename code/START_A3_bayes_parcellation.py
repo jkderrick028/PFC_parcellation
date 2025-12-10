@@ -26,8 +26,8 @@ def run_bayes_parcellation(ROI):
     dataset_name = 'MDTB' # or Demand
 
     # atlas_name = 'yeo17'
-    # atlas_name = 'schaefer100'
-    atlas_name = 'glasser'
+    atlas_name = 'schaefer100'
+    # atlas_name = 'glasser'
 
     strength = 20.0
 
@@ -237,3 +237,5 @@ if __name__=='__main__':
 
     for roi in ROIs:
         run_bayes_parcellation(roi)
+
+    # run_bayes_parcellation('PFC')
