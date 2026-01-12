@@ -213,6 +213,11 @@ def prediction_error_cv(U_hat, Y_test, type='hard'):
     if type == 'hard':
         idx = pt.argmax(pt.tensor(U_hat), dim=1, keepdim=True)
         U = pt.zeros_like(pt.tensor(U_hat)).scatter_(1, idx, 1.).numpy()
+
+        # U = pt.zeros_like(pt.as_tensor(U_hat))
+        # U.scatter_(1, idx, 1.0)
+        # U = U.cpu().numpy()
+
     elif type == 'expected':
         U = U_hat.copy()
 
@@ -234,6 +239,28 @@ def prediction_error_cv(U_hat, Y_test, type='hard'):
         cosine_distances.append(cos_dist)
 
     return np.array(cosine_distances)
+
+
+def compute_subj_V(U_hat, Y):
+    """
+    Estimating the V for each subject
+
+    Args:
+        U_hat:  np.ndarray (n_subjects x n_parcels x n_vertices)
+                individualized parcellation
+        Y:      np.ndarray (n_subjects x n_conditions x n_vertices)
+                data
+
+    Returns:
+        V:      np.array (n_subjects x n_conditions x n_parcels)
+    """
+
+    idx = pt.argmax(pt.tensor(U_hat), dim=1, keepdim=True)
+    U = pt.zeros_like(pt.tensor(U_hat)).scatter_(1, idx, 1.).numpy()
+    U = np.divide(U, np.sum(U, axis=-1, keepdims=True))
+    Vs = np.matmul(U, Y.transpose([0, 2, 1]))
+
+    return Vs.transpose([0, 2, 1])
 
 
 def compute_dcbc_indiv(U, data, spatialMat, cv=False):

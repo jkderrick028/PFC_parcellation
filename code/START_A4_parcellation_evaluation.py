@@ -28,8 +28,8 @@ def run_parcellation_evaluation(ROI):
 
     dataset_name = 'MDTB' # or Demand
 
-    # atlas_name = 'glasser'
-    atlas_name = 'schaefer100'
+    atlas_name = 'glasser'
+    # atlas_name = 'schaefer100'
     # atlas_name = 'yeo17'
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
@@ -39,6 +39,8 @@ def run_parcellation_evaluation(ROI):
         os.makedirs(resultsPath)
 
     cv = True  # we use cross-validated DCBC
+    # cv = False
+
     output = dict()
     if cv:
         PKL_output = os.path.join(resultsPath, f'output_{ROI}_cv.pkl')
@@ -72,6 +74,8 @@ def run_parcellation_evaluation(ROI):
         included_vtx_inds_L = output_indiv['included_vtx_inds_L']
 
     U_group = np.tile(U_group, (n_subjects, 1, 1))
+
+    Vs = compute_subj_V(U_group[:, :, included_vtx_inds_LR], X_individuals[:, :, included_vtx_inds_LR])
 
     ## prediction error with leave-one-subject-out cross-validation
     cosine_distances_group = prediction_error_cv(U_group[:, :, included_vtx_inds_LR], X_individuals[:, :, included_vtx_inds_LR])
@@ -262,6 +266,7 @@ def run_parcellation_evaluation(ROI):
     output['output_dcbc_indiv'] = output_dcbc_indiv
     output['cosine_distances_group'] = cosine_distances_group
     output['cosine_distances_indiv'] = cosine_distances_indiv
+    output['Vs'] = Vs
 
     with open(PKL_output, 'wb') as pk:
         pickle.dump(output, pk)
@@ -269,7 +274,8 @@ def run_parcellation_evaluation(ROI):
 
 
 if __name__=='__main__':
-    ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
+    # ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
+    ROIs = ['PFC']
 
     for roi in ROIs:
         run_parcellation_evaluation(roi)

@@ -189,9 +189,14 @@ def colour_parcel(mname, sym=False, labels=None, clusters=None, gamma=0):
 
 
 
-def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser'):
+def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', lut=None):
     # lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, f'atl-{atlas}.lut'))
-    df = pd.read_csv(os.path.join(surface_helpers_dir, f'atl-{atlas}.lut'), header=None, names=['lid', 'r', 'g', 'b', 'roi'], sep='\s+', dtype={'r': float, 'g': float, 'b': float, 'lid': int})
+    if lut is None:
+        lut_name = f'atl-{atlas}.lut'
+    else:
+        lut_name = lut
+
+    df = pd.read_csv(os.path.join(surface_helpers_dir, lut_name), header=None, names=['lid', 'r', 'g', 'b', 'roi'], sep='\s+', dtype={'r': float, 'g': float, 'b': float, 'lid': int})
     cmap = df[['r', 'g', 'b']].to_numpy()
     names = df['roi'].tolist()
 
