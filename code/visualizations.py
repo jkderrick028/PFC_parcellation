@@ -223,9 +223,10 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
                      cmap=cmap,
                      borders=None if borders is None else border_LR,
                      overlay_type='label',
-                     bordersize=3,
+                     bordersize=0,
+                     bordercolor='w',
                      undermap='gray',
-                     underscale=[-1, 0.5]
+                     # underscale=[-1, 0.5]
         )
 
     else:
@@ -247,9 +248,10 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
                      cmap=cmap,
                      borders=None if borders is None else border_LR,
                      overlay_type='label',
-                     bordersize=3,
+                     bordersize=0,
+                     bordercolor='w',
                      undermap='gray',
-                     underscale=[-1, 0.5]
+                     # underscale=[-1, 0.5]
         )
 
 
