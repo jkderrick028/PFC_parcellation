@@ -25,9 +25,9 @@ def run_bayes_parcellation(ROI):
 
     dataset_name = 'MDTB' # or Demand
 
-    # atlas_name = 'yeo17'
-    atlas_name = 'schaefer100'
     # atlas_name = 'glasser'
+    atlas_name = 'schaefer100'
+    # atlas_name = 'yeo17'
 
     strength = 20.0
 
@@ -162,7 +162,7 @@ def run_bayes_parcellation(ROI):
     # group_parcellation[excluded_vtx_inds_LR] = 181
     group_parcellation[excluded_vtx_inds_LR] = np.max(group_parcellation) + 1
     # group_parcellation[inds_U_zero] = 0
-    group_parcellation[inds_U_zero] = np.max(group_parcellation) + 1
+    group_parcellation[inds_U_zero] = np.max(group_parcellation)
 
     ## U_individual: the data likelihood, n_subjects x n_parcels x n_vertices in whole cortxe
     U_individual_restore = np.zeros((n_subjects, K, n_vertices_whole_cortex))

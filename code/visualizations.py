@@ -211,12 +211,13 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
         else:
             keep_inds = np.arange(int(cmap.shape[0]/2))
         cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
-
+        
         flatmap.plot(label.reshape(-1, ),
                      surf=flat_surf_L,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
+                    # underlay=os.path.join(surface_helpers_dir, 'fs_LR.32k.L.flat.surf.gii'),
                      alpha=1,
-                     label_names=list(map(names.__getitem__, keep_inds)),
+                    #  label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
                      frame=frame,
                      render='matplotlib',
@@ -236,12 +237,13 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
         else:
             keep_inds = np.arange(int(cmap.shape[0]/2), cmap.shape[0])
         cmap = np.vstack([np.ones((1, 3)), cmap[keep_inds, :], np.ones((1, 3))])
-
+        
         flatmap.plot(label.reshape(-1, ),
                      surf=flat_surf_R,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
+                    #  underlay=os.path.join(surface_helpers_dir, 'fs_LR.32k.R.flat.surf.gii'),
                      alpha=1,
-                     label_names=list(map(names.__getitem__, keep_inds)),
+                    #  label_names=list(map(names.__getitem__, keep_inds)),
                      new_figure=False,
                      frame=frame,
                      render='matplotlib',
