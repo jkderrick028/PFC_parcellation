@@ -189,7 +189,7 @@ def colour_parcel(mname, sym=False, labels=None, clusters=None, gamma=0):
 
 
 
-def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', lut=None):
+def plot_flatmap_labels(label, hemi, frame=None, borders=None, atlas='glasser', lut=None, bordersize=0):
     # lid, cmap, names = nt.read_lut(os.path.join(surface_helpers_dir, f'atl-{atlas}.lut'))
     if lut is None:
         lut_name = f'atl-{atlas}.lut'
@@ -222,9 +222,9 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
                      frame=frame,
                      render='matplotlib',
                      cmap=cmap,
-                     borders=None if borders is None else border_LR,
+                     borders=borders,
                      overlay_type='label',
-                     bordersize=0,
+                     bordersize=bordersize,
                      bordercolor='w',
                      undermap='gray',
                      # underscale=[-1, 0.5]
@@ -248,43 +248,45 @@ def plot_flatmap_labels(label, hemi, frame=None, borders=True, atlas='glasser', 
                      frame=frame,
                      render='matplotlib',
                      cmap=cmap,
-                     borders=None if borders is None else border_LR,
+                     borders=borders,
                      overlay_type='label',
-                     bordersize=0,
+                     bordersize=bordersize,
                      bordercolor='w',
                      undermap='gray',
                      # underscale=[-1, 0.5]
         )
 
 
-def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr', colorbar=False):
+def flatmap_real_vals(surf_data, hemi, cscale=[-1, 1], cmap='bwr', colorbar=False, bordersize=1, borders=border_LR):
     [label_L, label_R] = surf_from_cifti(atlas.data_to_cifti(surf_data.reshape(1, -1)))
 
     if hemi == 'L':
         # left cortex
-        flatmap.plot(label_L.reshape(-1, ),
+        ax = flatmap.plot(label_L.reshape(-1, ),
                      surf=flat_surf_L,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.L.sulc.32k_fs_LR.shape.gii'),
                      alpha=1,
                      new_figure=False,
                      frame=None,
                      cmap=cmap,
-                     borders=border_LR,
-                     bordersize=1,
+                     borders=borders,
+                     bordersize=bordersize,
                      cscale=cscale
         )
 
     else:
         # right cortex
-        flatmap.plot(label_R.reshape(-1, ),
+        ax = flatmap.plot(label_R.reshape(-1, ),
                      surf=flat_surf_R,
                      underlay=os.path.join(surface_helpers_dir, 'sub-01.R.sulc.32k_fs_LR.shape.gii'),
                      alpha=1,
                      new_figure=False,
                      frame=None,
                      cmap=cmap,
-                     borders=border_LR,
-                     bordersize=1,
+                     borders=borders,
+                     bordersize=bordersize,
                      cscale=cscale,
                      colorbar=colorbar
         )
+
+    return ax 
