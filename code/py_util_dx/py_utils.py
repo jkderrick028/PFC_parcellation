@@ -25,14 +25,10 @@ def sqmat2vec(sqmat, upperORlower='upper'):
     """
 
     if upperORlower == 'upper':
-        coords = np.where(np.triu(np.ones(sqmat.shape), k=1) > 0)
-    elif upperORlower == 'lower':
-        coords = np.where(np.tril(np.ones(sqmat.shape), k=1) > 0)
+        coords = np.triu(np.ones_like(sqmat), k=1) > 0
     else:
-        coords = np.nan
-        exit(-1)
-    vec = sqmat[coords]
-    return vec
+        coords = np.tril(np.ones_like(sqmat), k=-1) > 0
+    return sqmat[coords]
 
 
 def r2z(r):
