@@ -103,6 +103,10 @@ def get_roi_pacels(roi):
     elif roi == 'whole_cortex':
         dict_parcel_labels = get_glasser_labels()
         parcels = list(dict_parcel_labels.keys())
+    elif roi == 'core_MD_frontal':
+        parcels = ['8BM', '8C', 'IFJp', 'p9-46v', 'a9-46v', 'i6-8', 'AVI']
+    elif roi == 'non_MD_frontal':
+        parcels = ['10pp', '10r', '25']
     else:
         print('undefined ROI')
         parcels = []
