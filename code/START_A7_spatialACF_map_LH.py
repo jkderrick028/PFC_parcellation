@@ -52,7 +52,11 @@ def compute_spatial_ACF(dataset_name='MDTB'):
     cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
     data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
 
-    MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+    if dataset_name == 'MDTB':
+        MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+    else:
+        MAT_dist = os.path.join(resultsPath, f'distAvrg_sp_{dataset_name}.mat')
+
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
     glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
@@ -95,6 +99,7 @@ if __name__=='__main__':
     try:
         dataset_name = sys.argv[1]
     except:
-        dataset_name = 'MDTB'
+        # dataset_name = 'MDTB'
+        dataset_name = 'HCPur100'
 
     compute_spatial_ACF(dataset_name=dataset_name)

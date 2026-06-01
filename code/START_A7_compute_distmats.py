@@ -10,8 +10,9 @@ def compute_distmats(dataset_name='HCPur100'):
     """
     ## defining paths
     projectPath, mainResultsPath = setProjectPath()
-    base_dir = '/cifs/diedrichsen/data/FunctionalFusion_new'
-    
+    # base_dir = '/cifs/diedrichsen/data/FunctionalFusion_new'
+    base_dir = '/Volumes/diedrichsen_data$/data/FunctionalFusion_new'
+
     resultsPath = os.path.join(mainResultsPath, 'START_A7_spatialACF_map_LH', f'{dataset_name}')
     if not os.path.exists(resultsPath):
         os.makedirs(resultsPath)
@@ -22,7 +23,8 @@ def compute_distmats(dataset_name='HCPur100'):
 
     path = Path(anat_dir)
     subjects = [x.name for x in path.iterdir() if x.is_dir()]
-    
+
+    # subjects = ['sub-101309']
     n_subjects = len(subjects)
    
     dist_matrices = 0
