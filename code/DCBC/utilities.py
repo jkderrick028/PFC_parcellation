@@ -136,11 +136,57 @@ def compute_dist_from_surface(files, type, max_dist=50, hems='L', sparse=True):
         dist = euclidean_distance(surf_vertices, surf_vertices)
         dist[dist > max_dist] = 0
 
-    elif type == 'dijstra':
+    # elif type == 'dijstra':
+    #     mat = nb.load(file_name)
+    #     surf = [x.data for x in mat.darrays]
+    #     surf_vertices = surf[0]
+    #     # TODO: call the calculation for dijstra's algorithm
+
+    elif type == 'dijkstra':
         mat = nb.load(file_name)
         surf = [x.data for x in mat.darrays]
-        surf_vertices = surf[0]
-        # TODO: call the calculation for dijstra's algorithm
+        surf_vertices = surf[0]   # shape (N, 3) — xyz coordinates
+        surf_faces    = surf[1]   # shape (F, 3) — triangular face indices
+
+        n_vertices = surf_vertices.shape[0]
+
+        # ------------------------------------------------------------------
+        # 1. Build a weighted adjacency graph from the mesh faces.
+        #    Each edge weight = Euclidean distance between the two endpoints.
+        # ------------------------------------------------------------------
+        rows, cols, weights = [], [], []
+
+        for face in surf_faces:
+            i, j, k = face[0], face[1], face[2]
+            pairs = [(i, j), (j, k), (i, k)]
+            for a, b in pairs:
+                d = np.linalg.norm(surf_vertices[a] - surf_vertices[b])
+                # Store both directions (undirected graph)
+                rows  += [a, b]
+                cols  += [b, a]
+                weights += [d, d]
+
+        graph = scipy.sparse.csr_matrix(
+            (weights, (rows, cols)),
+            shape=(n_vertices, n_vertices)
+        )
+
+        # ------------------------------------------------------------------
+        # 2. Run Dijkstra from every vertex, truncated at max_dist.
+        #    scipy.sparse.csgraph.dijkstra handles this efficiently via
+        #    the `limit` parameter — edges beyond the limit are set to inf.
+        # ------------------------------------------------------------------
+        dist = scipy.sparse.csgraph.dijkstra(
+            graph,
+            directed=False,
+            limit=max_dist      # vertices farther than max_dist → inf
+        )
+
+        # Replace inf (unreachable / beyond limit) with 0 to match the
+        # convention used by the euclidean branch above.
+        dist[np.isinf(dist)] = 0.0
+
+        dist[dist > max_dist] = 0
 
     return scipy.sparse.csr_matrix(dist) if sparse else dist
 
