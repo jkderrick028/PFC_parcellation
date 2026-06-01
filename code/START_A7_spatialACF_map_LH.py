@@ -33,7 +33,11 @@ def compute_spatial_ACF(dataset_name='MDTB'):
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k('whole_cortex')
 
     ## loading MDTB data
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
+    if dataset_name == 'MDTB':
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
+    else:
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_all.pkl')
+        
     with open(PKL_data, 'rb') as pf:
         original_data = pickle.load(pf)
         X_individuals = original_data['X_individuals']
