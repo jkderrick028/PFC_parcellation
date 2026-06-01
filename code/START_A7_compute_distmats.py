@@ -30,7 +30,7 @@ def compute_distmats(dataset_name='HCPur100'):
     for subj in subjects:
         white_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_white.surf.gii')
         pial_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_pial.surf.gii')
-        mid_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_mid.surf.gii') 
+        mid_L = os.path.join(resultsPath, f'{subj}_space-32k_hemi-L_mid.surf.gii')
 
         wb_command = f'wb_command -surface-cortex-layer {white_L} {pial_L} 0.5 {mid_L}'
         subprocess.run(wb_command, shell=True)
