@@ -35,7 +35,7 @@ def compute_distmats(dataset_name='HCPur100'):
         wb_command = f'wb_command -surface-cortex-layer {white_L} {pial_L} 0.5 {mid_L}'
         subprocess.run(wb_command, shell=True)
 
-        dm = compute_dist_from_surface(mid_L, type='dijstra', max_dist=50, hems='L', sparse=False)
+        dm = compute_dist_from_surface(mid_L, type='dijkstra', max_dist=50, hems='L', sparse=False)
 
         dist_matrices += dm  
 
