@@ -49,7 +49,13 @@ def compute_spatial_ACF(dataset_name='MDTB'):
     n_subjects = X_individuals.shape[0]
 
     part_vec = list(info_individuals['half'])
-    cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+    # cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+
+    if dataset_name == 'Nishimoto':
+        cond_vec = list(info_individuals['cond_num'])
+    else:
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+
     data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
 
     if dataset_name == 'MDTB':
@@ -100,6 +106,9 @@ if __name__=='__main__':
         dataset_name = sys.argv[1]
     except:
         # dataset_name = 'MDTB'
-        dataset_name = 'HCPur100'
+        # dataset_name = 'HCPur100'
+        # dataset_name = 'Language'
+        # dataset_name = 'Nishimoto'
+        dataset_name = 'IBC'
 
     compute_spatial_ACF(dataset_name=dataset_name)

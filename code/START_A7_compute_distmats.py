@@ -50,6 +50,9 @@ if __name__=='__main__':
     try:
         dataset_name = sys.argv[1]
     except:
-        dataset_name = 'HCPur100'
+        # dataset_name = 'HCPur100'
+        # dataset_name = 'Language'
+        # dataset_name = 'Nishimoto'
+        dataset_name = 'IBC'
 
     compute_distmats(dataset_name=dataset_name)
