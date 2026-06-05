@@ -1,14 +1,13 @@
-import os.path, pickle, scipy
+import os.path, pickle, scipy, sys
 import nibabel as nib
 import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
 from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
-from scipy.stats import ttest_ind, ttest_1samp
 from evaluations import *
-from Functional_Fusion.dataset import flat2ndarray
+from Functional_Fusion.reliability import flat2ndarray
 
 
-def compute_spatial_ACF(ROI):
+def compute_spatial_ACF(ROI, dataset_name = 'MDTB'):
     """
     computing cross-validated spatial ACF
     Args:
@@ -17,8 +16,6 @@ def compute_spatial_ACF(ROI):
     """
     ## defining paths
     projectPath, mainResultsPath = setProjectPath()
-
-    dataset_name = 'MDTB' # or Demand
 
     surface_helpers_dir = os.path.join(projectPath, 'surface_helpers')
 
@@ -33,7 +30,11 @@ def compute_spatial_ACF(ROI):
     included_vtx_inds_LR, included_vtx_inds_L, included_vtx_inds_R, excluded_vtx_inds_LR = get_roi_vtx_from_fs32k(ROI)
 
     ## loading MDTB data
-    PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_Cond_Half_ses-s2.pkl')
+    if dataset_name == 'MDTB':
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_ses-s2.pkl')
+    else:
+        PKL_data = os.path.join(projectPath, 'data', f'{dataset_name}_CondHalf_all.pkl')
+
     with open(PKL_data, 'rb') as pf:
         original_data = pickle.load(pf)
         X_individuals = original_data['X_individuals']
@@ -45,11 +46,23 @@ def compute_spatial_ACF(ROI):
     n_subjects = X_individuals.shape[0]
 
     part_vec = list(info_individuals['half'])
-    cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+    # cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+
+    if dataset_name == 'Nishimoto':
+        cond_vec = list(info_individuals['cond_num'])
+    else:
+        cond_vec = list(info_individuals[dataset_obj_individuals.cond_ind])
+
     data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
 
     ## DCBC using left hemisphere only
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+
+    # if dataset_name == 'MDTB':
+    #     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+    # else:
+    #     MAT_dist = os.path.join(projectPath, 'results', 'START_A7_spatialACF_map_LH', dataset_name, f'distAvrg_sp_{dataset_name}.mat')
+
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
     glasser_L = os.path.join(surface_helpers_dir, 'glasser.L.label.gii')
@@ -101,8 +114,18 @@ def compute_spatial_ACF(ROI):
 
 
 if __name__=='__main__':
+    try:
+        dataset_name = sys.argv[1]
+    except:
+        # dataset_name = 'MDTB'
+        dataset_name = 'Demand'
+        # dataset_name = 'HCPur100'
+        # dataset_name = 'Language'
+        # dataset_name = 'Nishimoto'
+        # dataset_name = 'IBC'
+
     ROIs = ['PFC', 'visual', 'somatosensory', 'parietal']
 
     for roi in ROIs:
-        compute_spatial_ACF(roi)
+        compute_spatial_ACF(roi, dataset_name=dataset_name)
 

@@ -1,9 +1,7 @@
 import os.path, pickle, scipy, sys
 import nibabel as nib
-import matplotlib.pyplot as plt
 from py_util_dx.py_utils import setProjectPath
-from py_util_dx.data_utils import get_roi_pacels, get_glasser_labels, get_roi_vtx_from_fs32k
-from scipy.stats import ttest_ind, ttest_1samp
+from py_util_dx.data_utils import get_roi_vtx_from_fs32k
 from evaluations import *
 from Functional_Fusion.reliability import flat2ndarray
 
@@ -58,10 +56,12 @@ def compute_spatial_ACF(dataset_name='MDTB'):
 
     data = flat2ndarray(X_individuals[:, :, included_vtx_inds_L], part_vec, cond_vec)
 
-    if dataset_name == 'MDTB':
-        MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
-    else:
-        MAT_dist = os.path.join(resultsPath, f'distAvrg_sp_{dataset_name}.mat')
+    # if dataset_name == 'MDTB':
+    #     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+    # else:
+    #     MAT_dist = os.path.join(resultsPath, f'distAvrg_sp_{dataset_name}.mat')
+
+    MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
 
     spatialMat = scipy.io.loadmat(MAT_dist)['avrgDs'].toarray()
 
@@ -105,10 +105,10 @@ if __name__=='__main__':
     try:
         dataset_name = sys.argv[1]
     except:
-        # dataset_name = 'MDTB'
+        dataset_name = 'MDTB'
         # dataset_name = 'HCPur100'
         # dataset_name = 'Language'
         # dataset_name = 'Nishimoto'
-        dataset_name = 'IBC'
+        # dataset_name = 'IBC'
 
     compute_spatial_ACF(dataset_name=dataset_name)

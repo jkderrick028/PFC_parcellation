@@ -22,7 +22,10 @@ def compute_distmats(dataset_name='HCPur100'):
     anat_dir = os.path.join(base_dir, dataset_name, 'derivatives', 'ffimport')
 
     path = Path(anat_dir)
-    subjects = [x.name for x in path.iterdir() if x.is_dir()]
+    # subjects = [x.name for x in path.iterdir() if x.is_dir()]
+
+    sn = [2, 3, 4, 6, 8, 9, 10, 12, 14]
+    subjects = [f'sub-%02d' % x for x in sn]
 
     # subjects = ['sub-101309']
     n_subjects = len(subjects)
@@ -30,6 +33,7 @@ def compute_distmats(dataset_name='HCPur100'):
     dist_matrices = 0
 
     for subj in subjects:
+        print(f'Now processing {subj}')
         white_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_white.surf.gii')
         pial_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_pial.surf.gii')
         mid_L = os.path.join(resultsPath, f'{subj}_space-32k_hemi-L_mid.surf.gii')
@@ -50,9 +54,10 @@ if __name__=='__main__':
     try:
         dataset_name = sys.argv[1]
     except:
+        dataset_name = 'MDTB'
         # dataset_name = 'HCPur100'
         # dataset_name = 'Language'
         # dataset_name = 'Nishimoto'
-        dataset_name = 'IBC'
+        # dataset_name = 'IBC'
 
     compute_distmats(dataset_name=dataset_name)
