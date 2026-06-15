@@ -13,6 +13,10 @@ import nibabel as nb
 import matplotlib.pyplot as plt
 from pathlib import Path
 from AnatSearchlight.pymvpa_surf import Surface
+from scipy.sparse.csgraph import dijkstra
+from collections import deque
+import warnings
+
 
 # Check if torch is available
 try:
@@ -102,6 +106,62 @@ def euclidean_distance(a, b, decimals=3):
     return dist
 
 
+def surfing_dijkstradist(vertices, faces, source_idx, max_radius):
+    """
+    MATLAB's surfing_dijkstradist equivalent
+    Computes geodesic distances from source to all vertices in subsurface
+
+    Args:
+        vertices: (N, 3) array of vertex coordinates
+        faces: (F, 3) array of face indices
+        source_idx: index of source vertex in the subsurface
+        max_radius: maximum distance (not used directly, kept for compatibility)
+
+    Returns:
+        distances: (N,) array of geodesic distances from source
+    """
+    if len(vertices) == 0:
+        return np.array([])
+
+    n_vertices = len(vertices)
+
+    # Build graph for subsurface
+    rows, cols, weights = [], [], []
+
+    for face in faces:
+        i, j, k = face
+
+        # Edge i-j
+        d = np.linalg.norm(vertices[i] - vertices[j])
+        rows.extend([i, j])
+        cols.extend([j, i])
+        weights.extend([d, d])
+
+        # Edge j-k
+        d = np.linalg.norm(vertices[j] - vertices[k])
+        rows.extend([j, k])
+        cols.extend([k, j])
+        weights.extend([d, d])
+
+        # Edge i-k
+        d = np.linalg.norm(vertices[i] - vertices[k])
+        rows.extend([i, k])
+        cols.extend([k, i])
+        weights.extend([d, d])
+
+    # Create sparse graph
+    graph = scipy.sparse.csr_matrix(
+        (weights, (rows, cols)),
+        shape=(n_vertices, n_vertices)
+    )
+
+    # Compute Dijkstra distances
+    distances = dijkstra(graph, directed=False, indices=[source_idx])[0]
+
+    return distances
+
+
+
 def compute_dist_from_surface(files, type, max_dist=50, hems='L', sparse=True):
     """ The function of calculating distance matrix between each pair
         of vertices on the cortical surface
@@ -139,126 +199,23 @@ def compute_dist_from_surface(files, type, max_dist=50, hems='L', sparse=True):
         dist = euclidean_distance(surf_vertices, surf_vertices)
         dist[dist > max_dist] = 0
 
-    # elif type == 'dijstra':
-    #     mat = nb.load(file_name)
-    #     surf = [x.data for x in mat.darrays]
-    #     surf_vertices = surf[0]
-    #     # TODO: call the calculation for dijstra's algorithm
-
-    # elif type == 'dijkstra':
-    #     mat = nb.load(file_name)
-    #     surf = [x.data for x in mat.darrays]
-    #     surf_vertices = surf[0]   # shape (N, 3) — xyz coordinates
-    #     surf_faces    = surf[1]   # shape (F, 3) — triangular face indices
-    #
-    #     n_vertices = surf_vertices.shape[0]
-    #
-    #     # ------------------------------------------------------------------
-    #     # 1. Build a weighted adjacency graph from the mesh faces.
-    #     #    Each edge weight = Euclidean distance between the two endpoints.
-    #     # ------------------------------------------------------------------
-    #     rows, cols, weights = [], [], []
-    #
-    #     for face in surf_faces:
-    #         i, j, k = face[0], face[1], face[2]
-    #         pairs = [(i, j), (j, k), (i, k)]
-    #         for a, b in pairs:
-    #             d = np.linalg.norm(surf_vertices[a] - surf_vertices[b])
-    #             # Store both directions (undirected graph)
-    #             rows  += [a, b]
-    #             cols  += [b, a]
-    #             weights += [d, d]
-    #
-    #     graph = scipy.sparse.csr_matrix(
-    #         (weights, (rows, cols)),
-    #         shape=(n_vertices, n_vertices)
-    #     )
-    #
-    #     # ------------------------------------------------------------------
-    #     # 2. Run Dijkstra from every vertex, truncated at max_dist.
-    #     #    scipy.sparse.csgraph.dijkstra handles this efficiently via
-    #     #    the `limit` parameter — edges beyond the limit are set to inf.
-    #     # ------------------------------------------------------------------
-    #     dist = scipy.sparse.csgraph.dijkstra(
-    #         graph,
-    #         directed=False,
-    #         limit=max_dist      # vertices farther than max_dist → inf
-    #     )
-    #
-    #     # Replace inf (unreachable / beyond limit) with 0 to match the
-    #     # convention used by the euclidean branch above.
-    #     dist[np.isinf(dist)] = 0.0
-    #
-    #     dist[dist > max_dist] = 0
-
-    # elif type == 'dijkstra':
-    #     mat = nb.load(file_name)
-    #     surf = [x.data for x in mat.darrays]
-    #     surf_vertices = surf[0]  # shape (N, 3) — xyz coordinates
-    #     surf_faces = surf[1]  # shape (F, 3) — triangular face indices
-    #
-    #     n_vertices = surf_vertices.shape[0]
-    #
-    #     # ------------------------------------------------------------------
-    #     # 1. Build a weighted adjacency graph from the mesh faces.
-    #     #    Each edge weight = Euclidean distance between the two endpoints.
-    #     # ------------------------------------------------------------------
-    #     v0, v1, v2 = surf_faces[:, 0], surf_faces[:, 1], surf_faces[:, 2]
-    #     pairs = np.concatenate([
-    #         np.stack([v0, v1], axis=1),
-    #         np.stack([v1, v2], axis=1),
-    #         np.stack([v0, v2], axis=1),
-    #     ])
-    #     diffs = surf_vertices[pairs[:, 0]] - surf_vertices[pairs[:, 1]]
-    #     w = np.linalg.norm(diffs, axis=1)
-    #     rows = np.concatenate([pairs[:, 0], pairs[:, 1]])
-    #     cols = np.concatenate([pairs[:, 1], pairs[:, 0]])
-    #     weights = np.concatenate([w, w])
-    #
-    #     graph = scipy.sparse.csr_matrix(
-    #         (weights, (rows, cols)),
-    #         shape=(n_vertices, n_vertices)
-    #     )
-    #
-    #     # ------------------------------------------------------------------
-    #     # 2. Run Dijkstra from every vertex, truncated at max_dist.
-    #     #    scipy.sparse.csgraph.dijkstra handles this efficiently via
-    #     #    the `limit` parameter — vertices farther than max_dist → inf.
-    #     # ------------------------------------------------------------------
-    #     dist = scipy.sparse.csgraph.dijkstra(
-    #         graph,
-    #         directed=False,
-    #         limit=max_dist
-    #     )
-    #
-    #     # Replace inf (unreachable / beyond limit) with 0 to match the
-    #     # convention used by the euclidean branch above.
-    #     dist[np.isinf(dist)] = 0.0
-
-    # elif type == 'dijkstra':
-    #     out_dir = Path(files).parent
-    #     out_file = os.path.join(out_dir, f'temp_distmat_out.npy')
-    #     dist = cortex(files, out_file, euclid=False, dlabel=None, medial=None,
-    #        use_wb=False, unassigned_value=0, verbose=False, n_jobs=None)
-    #     dist = np.load(dist)
-    #     dist[dist > max_dist] = 0
-    #     os.remove(out_file)
-
     elif type == 'dijkstra':
         mat = nb.load(file_name)
         surf = [x.data for x in mat.darrays]
-        surf_vertices = surf[0]   # shape (N, 3) — xyz coordinates
-        surf_faces    = surf[1]   # shape (F, 3) — triangular face indices
+        surf_vertices = surf[0]  # shape (N, 3) — no transpose needed
+        surf_faces = surf[1]  # shape (F, 3) — no transpose needed
 
-        n_vertices = surf_vertices.shape[0]
+        surf_obj = Surface(v=surf_vertices, f=surf_faces)
+        n_vertices = surf_obj.nvertices
 
-        surf = Surface(v=surf_vertices, f=surf_faces)
+        dist = np.full((n_vertices, n_vertices), np.inf)
 
-        dist = np.zeros((n_vertices, n_vertices))
-        for v_i in np.arange(n_vertices):
-            fdist = surf.dijkstra_distance(src=v_i, maxdistance=max_dist)
-            for k, v in fdist.items():
-                dist[v_i, k] = v
+        for v_i in range(n_vertices):
+            # dijkstra_distance returns {node_idx: distance} for all nodes
+            # within maxdistance; nodes beyond max_dist are simply absent (not inf)
+            fdist = surf_obj.dijkstra_distance(src=v_i, maxdistance=max_dist)
+            for node_j, d in fdist.items():
+                dist[v_i, node_j] = d
 
     return scipy.sparse.csr_matrix(dist) if sparse else dist
 

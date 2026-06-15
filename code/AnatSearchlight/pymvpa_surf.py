@@ -56,7 +56,7 @@ class Surface(object):
 
         # set faces
         if f is None:
-            f = np.zeros((0, 3), dtype=np.int)
+            f = np.zeros((0, 3), dtype=np.int64)
         else:
             f = np.asarray(f)
             if len(f.shape) != 2 or f.shape[1] != 3:

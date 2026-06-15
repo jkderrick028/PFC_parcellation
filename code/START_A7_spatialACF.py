@@ -57,6 +57,7 @@ def compute_spatial_ACF(ROI, dataset_name = 'MDTB'):
 
     ## DCBC using left hemisphere only
     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
+    # MAT_dist = os.path.join(projectPath, 'results', 'START_A7_spatialACF_map_LH', dataset_name, f'distAvrg_sp_{dataset_name}.mat')
 
     # if dataset_name == 'MDTB':
     #     MAT_dist = os.path.join(projectPath, 'code', 'DCBC', 'distanceMatrix', 'distAvrg_sp.mat')
@@ -117,8 +118,8 @@ if __name__=='__main__':
     try:
         dataset_name = sys.argv[1]
     except:
-        # dataset_name = 'MDTB'
-        dataset_name = 'Demand'
+        dataset_name = 'MDTB'
+        # dataset_name = 'Demand'
         # dataset_name = 'HCPur100'
         # dataset_name = 'Language'
         # dataset_name = 'Nishimoto'

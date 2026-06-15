@@ -2,6 +2,7 @@ import os.path, pickle, scipy, sys, subprocess
 from py_util_dx.py_utils import setProjectPath
 from pathlib import Path
 from DCBC.utilities import compute_dist_from_surface
+import numpy as np
 
 
 def compute_distmats(dataset_name='HCPur100'):
@@ -24,13 +25,15 @@ def compute_distmats(dataset_name='HCPur100'):
     path = Path(anat_dir)
     # subjects = [x.name for x in path.iterdir() if x.is_dir()]
 
-    sn = [2, 3, 4, 6, 8, 9, 10, 12, 14]
+    # sn = [2, 3, 4, 6, 8, 9, 10, 12, 14]
+    sn = [2, 3]
     subjects = [f'sub-%02d' % x for x in sn]
 
     # subjects = ['sub-101309']
     n_subjects = len(subjects)
    
     dist_matrices = 0
+    max_dist = 45
 
     for subj in subjects:
         print(f'Now processing {subj}')
@@ -38,14 +41,28 @@ def compute_distmats(dataset_name='HCPur100'):
         pial_L = os.path.join(anat_dir, subj, 'anat', f'{subj}_space-32k_hemi-L_pial.surf.gii')
         mid_L = os.path.join(resultsPath, f'{subj}_space-32k_hemi-L_mid.surf.gii')
 
-        wb_command = f'wb_command -surface-cortex-layer {white_L} {pial_L} 0.5 {mid_L}'
+        # white_L = '/Users/jkderrick028/Documents/Projects/7TfMRI/pfc_parcellation/surface_helpers/fs_LR_32-master/fs_LR.32k.L.white.surf.gii'
+        # pial_L = '/Users/jkderrick028/Documents/Projects/7TfMRI/pfc_parcellation/surface_helpers/fs_LR_32-master/fs_LR.32k.L.pial.surf.gii'
+        # mid_L = os.path.join(resultsPath, 'fs_LR.32k-L_mid.surf.gii')
+
+        # mid_L = '/Users/jkderrick028/Documents/Projects/7TfMRI/pfc_parcellation/surface_helpers/fs_LR_32-master/fs_LR.32k.L.sphere.surf.gii'
+
+        # # wb_command = f'wb_command -surface-cortex-layer {white_L} {pial_L} 0.5 {mid_L}'
+        wb_command = f'wb_command -surface-average {mid_L} -surf {white_L} -surf {pial_L}'
         subprocess.run(wb_command, shell=True)
 
-        dm = compute_dist_from_surface(mid_L, type='dijkstra', max_dist=50, hems='L', sparse=False)
+        # mid_L_inflated = os.path.join(resultsPath, f'{subj}_space-32k_hemi-L_mid.inflated.surf.gii')
+        # mid_L_very_inflated = os.path.join(resultsPath, f'{subj}_space-32k_hemi-L_mid.veryinflated.surf.gii')
+        # wb_command = f'wb_command -surface-generate-inflated {mid_L} {mid_L_inflated} {mid_L_very_inflated}'
+        # subprocess.run(wb_command, shell=True)
+
+        dm = compute_dist_from_surface(mid_L, type='dijkstra', max_dist=max_dist, hems='L', sparse=False)
 
         dist_matrices += dm  
 
     dist_matrices = dist_matrices / n_subjects
+
+    dist_matrices[dist_matrices>max_dist] = 0
 
     scipy.io.savemat(MAT_output, {'avrgDs': scipy.sparse.csr_matrix(dist_matrices)})
 
